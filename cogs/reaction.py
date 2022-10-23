@@ -89,12 +89,12 @@ class reaction(Extension):
 
     @reaction.subcommand()
     async def shrug(self, ctx: CommandContext):
-        """¯\_(ツ)_/¯"""  # noqa: W605
+        r"""¯\_(ツ)_/¯"""
         await ctx.defer()
         url = await api_request("https://nekos.best/api/v2/shrug")
         await ctx.send(
             embeds=raweb(
-                desc=f"{ctx.author.mention} ¯\_(ツ)_/¯",  # noqa: W605
+                desc=rf"{ctx.author.mention} ¯\_(ツ)_/¯",
                 image=EmbedImageStruct(url=url["results"][0]["url"]),
             )
         )
