@@ -13,10 +13,18 @@
 
 import os
 
-from interactions import *
+from interactions import (
+    ChannelType,
+    Client,
+    CommandContext,
+    EmbedImageStruct,
+    Extension,
+    Permissions,
+    extension_command,
+)
 from loguru._logger import Logger
 
-from utils import raweb, api_request
+from utils import api_request, raweb
 
 
 class nsfw(Extension):
@@ -36,80 +44,144 @@ class nsfw(Extension):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=pgif")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand(name="4k")
     async def _4k(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=4k")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand()
     async def anal(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=anal")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
-    
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
+
     @nsfw.subcommand()
     async def ass(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=ass")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand()
     async def gonewild(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=gonewild")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
-    
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
+
     @nsfw.subcommand()
     async def pussy(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=pussy")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
-    
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
+
     @nsfw.subcommand()
     async def thigh(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=thigh")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand()
     async def boobs(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=boobs")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
 
 def setup(client, **kwargs):

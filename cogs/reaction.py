@@ -14,12 +14,18 @@
 import os
 from random import randint
 
-from interactions import *
+from interactions import (
+    Client,
+    CommandContext,
+    EmbedImageStruct,
+    Extension,
+    extension_command,
+)
 from loguru._logger import Logger
 
-from utils import raweb, api_request
+from utils import api_request, raweb
 
-newline = '\n'
+newline = "\n"
 
 
 class reaction(Extension):
@@ -39,48 +45,78 @@ class reaction(Extension):
     async def blush(self, ctx: CommandContext):
         """(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄"""
         await ctx.defer()
-        match randint(0,1):
+        match randint(0, 1):
             case 0:
                 url = await api_request("https://nekos.best/api/v2/blush")
-                await ctx.send(embeds=raweb(desc=f"{ctx.author.mention} (⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄", image=EmbedImageStruct(url=url['results'][0]['url'])))
+                await ctx.send(
+                    embeds=raweb(
+                        desc=f"{ctx.author.mention} (⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄",
+                        image=EmbedImageStruct(url=url["results"][0]["url"]),
+                    )
+                )
             case 1:
                 url = await api_request("https://api.waifu.pics/sfw/blush")
-                await ctx.send(embeds=raweb(desc=f"{ctx.author.mention} (⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄", image=EmbedImageStruct(url=url['url'])))
-    
+                await ctx.send(
+                    embeds=raweb(
+                        desc=f"{ctx.author.mention} (⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄",
+                        image=EmbedImageStruct(url=url["url"]),
+                    )
+                )
+
     @reaction.subcommand()
     async def sleepy(self, ctx: CommandContext):
         """(。-ω-)zzz"""
         await ctx.defer()
         url = await api_request("https://nekos.best/api/v2/sleep")
-        await ctx.send(embeds=raweb(desc=f"{ctx.author.mention} (。-ω-)zzz", image=EmbedImageStruct(url=url['results'][0]['url'])))
+        await ctx.send(
+            embeds=raweb(
+                desc=f"{ctx.author.mention} (。-ω-)zzz",
+                image=EmbedImageStruct(url=url["results"][0]["url"]),
+            )
+        )
 
     @reaction.subcommand()
     async def cry(self, ctx: CommandContext):
         """｡･ﾟﾟ･(>д<)･ﾟﾟ･｡"""
         await ctx.defer()
         url = await api_request("https://nekos.best/api/v2/cry")
-        await ctx.send(embeds=raweb(desc=f"{ctx.author.mention} ｡･ﾟﾟ･(>д<)･ﾟﾟ･｡", image=EmbedImageStruct(url=url['results'][0]['url'])))
-    
+        await ctx.send(
+            embeds=raweb(
+                desc=f"{ctx.author.mention} ｡･ﾟﾟ･(>д<)･ﾟﾟ･｡",
+                image=EmbedImageStruct(url=url["results"][0]["url"]),
+            )
+        )
+
     @reaction.subcommand()
     async def shrug(self, ctx: CommandContext):
-        """¯\_(ツ)_/¯"""
+        """¯\_(ツ)_/¯"""  # noqa: W605
         await ctx.defer()
         url = await api_request("https://nekos.best/api/v2/shrug")
-        await ctx.send(embeds=raweb(desc=f"{ctx.author.mention} ¯\_(ツ)_/¯", image=EmbedImageStruct(url=url['results'][0]['url'])))
+        await ctx.send(
+            embeds=raweb(
+                desc=f"{ctx.author.mention} ¯\_(ツ)_/¯",  # noqa: W605
+                image=EmbedImageStruct(url=url["results"][0]["url"]),
+            )
+        )
 
     @reaction.subcommand()
     async def pout(self, ctx: CommandContext):
         """( ˘ ^˘ )=3"""
         await ctx.defer()
         url = await api_request("https://nekos.best/api/v2/pout")
-        await ctx.send(embeds=raweb(desc=f"{ctx.author.mention} ( ˘ ^˘ )=3", image=EmbedImageStruct(url=url['results'][0]['url'])))
-    
+        await ctx.send(
+            embeds=raweb(
+                desc=f"{ctx.author.mention} ( ˘ ^˘ )=3",
+                image=EmbedImageStruct(url=url["results"][0]["url"]),
+            )
+        )
+
     @reaction.subcommand()
     async def baka(self, ctx: CommandContext):
         """(￣▽￣)"""
         await ctx.defer()
         url = await api_request("https://nekos.best/api/v2/baka")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['results'][0]['url'])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["results"][0]["url"])))
 
 
 def setup(client, **kwargs):

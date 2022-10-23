@@ -11,20 +11,33 @@
 #                   |___||__| /____  >|____|_  /\__   | |__| |____/
 #                                  \/        \/    |__|
 
-from contextlib import suppress
-from datetime import datetime, timedelta
 import os
-from random import randint
 from typing import List
 
-from interactions import *
-from interactions.ext.persistence import PersistenceExtension, PersistentCustomID, extension_persistent_modal
+from interactions import (
+    Channel,
+    ChannelType,
+    CommandContext,
+    Guild,
+    LibraryException,
+    Modal,
+    Permissions,
+    TextInput,
+    TextStyleType,
+    extension_command,
+    extension_listener,
+    get,
+    option,
+)
 from interactions.ext.lavalink import VoiceClient, VoiceState
+from interactions.ext.persistence import (
+    PersistenceExtension,
+    PersistentCustomID,
+    extension_persistent_modal,
+)
 from loguru._logger import Logger
 
-from utils import raweb
-
-newline = '\n'
+newline = "\n"
 
 
 class dvc(PersistenceExtension):
@@ -36,7 +49,8 @@ class dvc(PersistenceExtension):
         self.logger.info(
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )
-# TODO: Consider rework
+
+    # TODO: Consider rework
     @extension_listener()
     async def on_voice_state_update(self, before: VoiceState, after: VoiceState):
         if after.joined:
@@ -44,9 +58,15 @@ class dvc(PersistenceExtension):
             if document and str(after.channel_id) == document["lobby"]:
                 g = await get(self.client, Guild, object_id=after.guild_id)
                 name = document["format"].replace("{{MEMBER}}", after.member.name)
-                c = await g.create_channel(name if len(name) <= 32 else name[:29]+"...", type=ChannelType.GUILD_VOICE, parent_id=int(document["category"]))
+                c = await g.create_channel(
+                    name if len(name) <= 32 else name[:29] + "...",
+                    type=ChannelType.GUILD_VOICE,
+                    parent_id=int(document["category"]),
+                )
                 try:
-                    await self.client._http.modify_member(int(after.member.id), int(after.guild_id), {"channel_id":int(c.id)})
+                    await self.client._http.modify_member(
+                        int(after.member.id), int(after.guild_id), {"channel_id": int(c.id)}
+                    )
                 except LibraryException:
                     await c.delete()
         if before:
@@ -54,17 +74,21 @@ class dvc(PersistenceExtension):
             if not voice_states or len(voice_states) == 0:
                 document = await self._dvc.find_one({"_id": int(before.guild_id)})
                 if document and before.channel_id:
-                    if 'keep' in document and str(before.channel_id) in document['keep']:
+                    if "keep" in document and str(before.channel_id) in document["keep"]:
                         return
                     channel = await before.get_channel()
-                    if channel.parent_id and str(channel.parent_id) == document["category"] and not str(channel.id) == document["lobby"]:
+                    if (
+                        channel.parent_id
+                        and str(channel.parent_id) == document["category"]
+                        and not str(channel.id) == document["lobby"]
+                    ):
                         await channel.delete()
 
     @extension_command(dm_permission=False, default_member_permissions=Permissions.MANAGE_CHANNELS)
     async def dvc(self, *args, **kwargs):
         """Dynamic Voice Channel"""
         ...
-    
+
     @dvc.subcommand()
     @option("動態語音大廳", channel_types=[ChannelType.GUILD_VOICE])
     @option("動態語音分類", channel_types=[ChannelType.GUILD_CATEGORY])
@@ -74,43 +98,72 @@ class dvc(PersistenceExtension):
             return await ctx.send(":x: 我沒權限管理頻道 ;-;", ephemeral=True)
         modal = Modal(
             title="設定動態語音",
-            custom_id=str(PersistentCustomID(self.client, "dvc_settings", [str(lobby.id), str(category.id)])),
+            custom_id=str(
+                PersistentCustomID(self.client, "dvc_settings", [str(lobby.id), str(category.id)])
+            ),
             components=[
-                TextInput(style=TextStyleType.SHORT, custom_id="dvc_settings_name", label="頻道名稱格式", required=True, placeholder="請輸入頻道名稱格式\n可用參數: {{MEMBER}} 用戶名稱", value="{{MEMBER}} 的語音頻道")
-            ]
+                TextInput(
+                    style=TextStyleType.SHORT,
+                    custom_id="dvc_settings_name",
+                    label="頻道名稱格式",
+                    required=True,
+                    placeholder="請輸入頻道名稱格式\n可用參數: {{MEMBER}} 用戶名稱",
+                    value="{{MEMBER}} 的語音頻道",
+                )
+            ],
         )
         await ctx.popup(modal)
-    
+
     @dvc.subcommand()
     async def reset(self, ctx: CommandContext):
         """重置動態語音"""
         await ctx.defer(ephemeral=True)
         if not await self._dvc.find_one({"_id": int(ctx.guild_id)}, {"_id": 1}):
-            return await ctx.send(f":x: baka 我印象中好像還沒有幫這個伺服器設定 動態語音 喔！\n請用 </dvc settings:{self.client._find_command('dvc').id}> 來設定 動態語音", ephemeral=True)
+            return await ctx.send(
+                f":x: baka 我印象中好像還沒有幫這個伺服器設定 動態語音 喔！\n請用 </dvc settings:{self.client._find_command('dvc').id}> 來設定 動態語音",
+                ephemeral=True,
+            )
         await self._dvc.delete_one({"_id": int(ctx.guild_id)})
-        await ctx.send(f":white_check_mark: 我幫你重置了 動態語音 設定！你可以用 </dvc settings:{self.client._find_command('dvc').id}> 來再次設定 動態語音。", ephemeral=True)
-    
+        await ctx.send(
+            f":white_check_mark: 我幫你重置了 動態語音 設定！你可以用 </dvc settings:{self.client._find_command('dvc').id}> 來再次設定 動態語音。",
+            ephemeral=True,
+        )
+
     @dvc.subcommand()
     @option("要保留的語音頻道", channel_types=[ChannelType.GUILD_VOICE])
     async def keep(self, ctx: CommandContext, channel: Channel):
         """保留語音頻道 (防止被刪除)"""
         document = await self._dvc.find_one({"_id": int(ctx.guild_id)}, {"keep": 1, "_id": 1})
         if not document:
-            return await ctx.send(f":x: baka 我印象中好像還沒有幫這個伺服器設定 動態語音 喔！\n請用 </dvc settings:{self.client._find_command('dvc').id}> 來設定 動態語音", ephemeral=True)
-        if 'keep' in document:
-            if str(channel.id) in document['keep']:
-                return await ctx.send(f":x: baka 這個語音頻道已經被保留了喔！", ephemeral=True)
+            return await ctx.send(
+                f":x: baka 我印象中好像還沒有幫這個伺服器設定 動態語音 喔！\n請用 </dvc settings:{self.client._find_command('dvc').id}> 來設定 動態語音",
+                ephemeral=True,
+            )
+        if "keep" in document:
+            if str(channel.id) in document["keep"]:
+                return await ctx.send(":x: baka 這個語音頻道已經被保留了喔！", ephemeral=True)
             else:
-                document['keep'].append(str(channel.id))
+                document["keep"].append(str(channel.id))
         else:
-            document['keep'] = [str(channel.id)]
-        await self._dvc.update_one({"_id": int(ctx.guild_id)}, {"$set": {"keep": document['keep']}}, upsert=True)
-        await ctx.send(f":white_check_mark: 我幫你保留了 {channel.mention} 這個語音頻道！現在它不會被我不小心刪除了！", ephemeral=True)
+            document["keep"] = [str(channel.id)]
+        await self._dvc.update_one(
+            {"_id": int(ctx.guild_id)}, {"$set": {"keep": document["keep"]}}, upsert=True
+        )
+        await ctx.send(
+            f":white_check_mark: 我幫你保留了 {channel.mention} 這個語音頻道！現在它不會被我不小心刪除了！", ephemeral=True
+        )
 
     @extension_persistent_modal("dvc_settings")
-    async def _dvc_settings(self, ctx: CommandContext, package: List[str], dvc_settings_name:str):
-        await ctx.send(f"我會把設定記住的！\n你可以隨時用 </dvc settings:{self.client._find_command('dvc').id}> 回來修改設定喔！", ephemeral=True)
-        await self._dvc.replace_one({"_id": int(ctx.guild_id)}, {"lobby": package[0], "category": package[1], "format": dvc_settings_name}, upsert=True)
+    async def _dvc_settings(self, ctx: CommandContext, package: List[str], dvc_settings_name: str):
+        await ctx.send(
+            f"我會把設定記住的！\n你可以隨時用 </dvc settings:{self.client._find_command('dvc').id}> 回來修改設定喔！",
+            ephemeral=True,
+        )
+        await self._dvc.replace_one(
+            {"_id": int(ctx.guild_id)},
+            {"lobby": package[0], "category": package[1], "format": dvc_settings_name},
+            upsert=True,
+        )
 
 
 def setup(client, **kwargs):

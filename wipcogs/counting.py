@@ -11,18 +11,12 @@
 #                   |___||__| /____  >|____|_  /\__   | |__| |____/
 #                                  \/        \/    |__|
 
-from io import BytesIO, StringIO
 import os
-from petpetgif import petpet
-import qrcode
 
-import aiohttp
-from interactions import *
+from interactions import Client, Extension, extension_command
 from loguru._logger import Logger
 
-from utils import bullshit_generator, raweb, api_request
-
-newline = '\n'
+newline = "\n"
 
 
 class counting(Extension):
@@ -36,6 +30,7 @@ class counting(Extension):
     @extension_command()
     async def counting(self, *args, **kwargs):
         ...
+
 
 def setup(client, **kwargs):
     counting(client, **kwargs)

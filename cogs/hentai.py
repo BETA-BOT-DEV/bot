@@ -14,10 +14,18 @@
 import os
 from random import randint
 
-from interactions import *
+from interactions import (
+    ChannelType,
+    Client,
+    CommandContext,
+    EmbedImageStruct,
+    Extension,
+    Permissions,
+    extension_command,
+)
 from loguru._logger import Logger
 
-from utils import raweb, api_request, request_img
+from utils import api_request, raweb
 
 
 class hentai(Extension):
@@ -37,161 +45,271 @@ class hentai(Extension):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=hass")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
-    
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
+
     @hentai.subcommand()
     async def tummy(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=hmidriff")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @hentai.subcommand()
     async def thigh(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
-        match randint(0,1):
+        match randint(0, 1):
             case 0:
-                url = await api_request('https://hmtai.herokuapp.com/v2/thighs')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['url'])))
+                url = await api_request("https://hmtai.herokuapp.com/v2/thighs")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
             case 1:
-                url = await api_request('https://nekobot.xyz/api/image?type=hthigh')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+                url = await api_request("https://nekobot.xyz/api/image?type=hthigh")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @hentai.subcommand()
     async def hentai(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
-        match randint(0,1):
+        match randint(0, 1):
             case 0:
-                url = await api_request('https://hmtai.herokuapp.com/v2/hentai')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['url'])))
+                url = await api_request("https://hmtai.herokuapp.com/v2/hentai")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
             case 1:
-                url = await api_request('https://nekobot.xyz/api/image?type=hentai')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
-    
+                url = await api_request("https://nekobot.xyz/api/image?type=hentai")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
+
     @hentai.subcommand()
     async def kitsune(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
-        url = await api_request('https://nekobot.xyz/api/image?type=hkitsune')
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+        url = await api_request("https://nekobot.xyz/api/image?type=hkitsune")
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @hentai.subcommand()
     async def anal(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=hanal")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @hentai.subcommand()
     async def neko(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
-        match randint(0,3):
+        match randint(0, 3):
             case 0:
-                url = await api_request('https://hmtai.herokuapp.com/v2/nsfwNeko')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['url'])))
+                url = await api_request("https://hmtai.herokuapp.com/v2/nsfwNeko")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
             case 1:
-                url = await api_request('https://nekobot.xyz/api/image?type=hneko')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+                url = await api_request("https://nekobot.xyz/api/image?type=hneko")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
             case 2:
-                url = await api_request('https://neko-love.xyz/api/v1/nekolewd')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['url'])))
+                url = await api_request("https://neko-love.xyz/api/v1/nekolewd")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
             case 3:
-                url = await api_request('https://nekos.moe/api/v1/random/image?nsfw=true')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=f"https://nekos.moe/image/{url['images'][0]['id']}")))
+                url = await api_request("https://nekos.moe/api/v1/random/image?nsfw=true")
+                await ctx.send(
+                    embeds=raweb(
+                        image=EmbedImageStruct(
+                            url=f"https://nekos.moe/image/{url['images'][0]['id']}"
+                        )
+                    )
+                )
 
     @hentai.subcommand()
     async def paizuri(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=paizuri")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
-    
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
+
     @hentai.subcommand()
     async def tentacle(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
-        match randint(0,1):
+        match randint(0, 1):
             case 0:
-                url = await api_request('https://hmtai.herokuapp.com/v2/tentacle')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['url'])))
+                url = await api_request("https://hmtai.herokuapp.com/v2/tentacle")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
             case 1:
-                url = await api_request('https://nekobot.xyz/api/image?type=tentacle')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
-    
+                url = await api_request("https://nekobot.xyz/api/image?type=tentacle")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
+
     @hentai.subcommand()
     async def boobs(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
-        match randint(0,1):
+        match randint(0, 1):
             case 0:
-                url = await api_request('https://hmtai.herokuapp.com/v2/boobs')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['url'])))
+                url = await api_request("https://hmtai.herokuapp.com/v2/boobs")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
             case 1:
-                url = await api_request('https://nekobot.xyz/api/image?type=hboobs')
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+                url = await api_request("https://nekobot.xyz/api/image?type=hboobs")
+                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @hentai.subcommand()
     async def yuri(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
-        url = await api_request('https://hmtai.herokuapp.com/v2/yuri')
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['url'])))
+        url = await api_request("https://hmtai.herokuapp.com/v2/yuri")
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
 
     @hentai.subcommand()
     async def pantsu(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
-        url = await api_request('https://hmtai.herokuapp.com/v2/pantsu')
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['url'])))
+        url = await api_request("https://hmtai.herokuapp.com/v2/pantsu")
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
 
     @hentai.subcommand()
     async def waifu(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
-            return await ctx.send(embeds=raweb(desc=":x: 不可以色色！這裡不是限制級頻道喔！", image=EmbedImageStruct(url='https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif')), ephemeral=True)
+            return await ctx.send(
+                embeds=raweb(
+                    desc=":x: 不可以色色！這裡不是限制級頻道喔！",
+                    image=EmbedImageStruct(
+                        url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
+                    ),
+                ),
+                ephemeral=True,
+            )
         await ctx.defer()
         url = await api_request("https://api.waifu.pics/nsfw/waifu")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['url'])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
 
 
 def setup(client, **kwargs):

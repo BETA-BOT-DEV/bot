@@ -11,18 +11,27 @@
 #                   |___||__| /____  >|____|_  /\__   | |__| |____/
 #                                  \/        \/    |__|
 
-from io import BytesIO, StringIO
 import os
-from petpetgif import petpet
-import qrcode
+from io import BytesIO, StringIO
 
 import aiohttp
-from interactions import *
+import qrcode
+from interactions import (
+    Client,
+    CommandContext,
+    EmbedImageStruct,
+    Extension,
+    File,
+    Member,
+    extension_command,
+    option,
+)
 from loguru._logger import Logger
+from petpetgif import petpet
 
-from utils import bullshit_generator, raweb, api_request
+from utils import api_request, bullshit_generator, raweb
 
-newline = '\n'
+newline = "\n"
 
 
 class generate(Extension):
@@ -45,7 +54,10 @@ class generate(Extension):
         await ctx.defer()
         data = await bullshit_generator(topic, length)
         file = File("bs.txt", StringIO(data)) if len(data) > 1950 else None
-        await ctx.send(f"我幫你唬爛了關於 {topic} 的 {len(data)} 字文章！{f'{newline}{newline}{data}' if not file else ''}", files=file)
+        await ctx.send(
+            f"我幫你唬爛了關於 {topic} 的 {len(data)} 字文章！{f'{newline}{newline}{data}' if not file else ''}",
+            files=file,
+        )
 
     @generate.subcommand()
     @option("使用指令的對象")
@@ -57,7 +69,13 @@ class generate(Extension):
         async with aiohttp.ClientSession() as s, s.get(url) as r:
             petpet.make(BytesIO(await r.content.read()), dest)
         dest.seek(0)
-        await ctx.send(embeds=raweb(desc=f"<@{ctx.user.id}> 摸了 <@{user.id}> 的頭", image=EmbedImageStruct(url="attachment://pet.gif")), files=File(filename=f"pet.gif", fp=dest))
+        await ctx.send(
+            embeds=raweb(
+                desc=f"<@{ctx.user.id}> 摸了 <@{user.id}> 的頭",
+                image=EmbedImageStruct(url="attachment://pet.gif"),
+            ),
+            files=File(filename="pet.gif", fp=dest),
+        )
 
     @generate.subcommand()
     @option("要Clyde說的話", max_value=50000, min_value=1)
@@ -65,7 +83,7 @@ class generate(Extension):
         """讓 Clyde 說話"""
         await ctx.defer()
         url = await api_request(f"https://nekobot.xyz/api/imagegen?type=clyde&text={text}")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @generate.subcommand()
     @option("用戶名稱")
@@ -73,19 +91,24 @@ class generate(Extension):
     async def faketweet(self, ctx: CommandContext, username: str, text: str):
         """發出假的推文"""
         await ctx.defer()
-        if username.startswith('@'):
+        if username.startswith("@"):
             username = username[1:]
-        url = await api_request(f"https://nekobot.xyz/api/imagegen?type=tweet&username={username}&text={text}")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url['message'])))
+        url = await api_request(
+            f"https://nekobot.xyz/api/imagegen?type=tweet&username={username}&text={text}"
+        )
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @generate.subcommand()
     @option("要包含的文字", max_length=500)
     async def qr(self, ctx: CommandContext, text: str):
         """生成 QR Code"""
         await ctx.defer()
-        qrcode.make(text).save(dest:=BytesIO())
+        qrcode.make(text).save(dest := BytesIO())
         dest.seek(0)
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url="attachment://qr.png")),files=File(filename="qr.png", fp=dest))
+        await ctx.send(
+            embeds=raweb(image=EmbedImageStruct(url="attachment://qr.png")),
+            files=File(filename="qr.png", fp=dest),
+        )
 
 
 def setup(client, **kwargs):
