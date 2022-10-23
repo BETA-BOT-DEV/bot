@@ -51,9 +51,7 @@ client = VoiceClient(
 logger.info("Initializing motor client.")
 import motor.motor_asyncio
 
-cluster = motor.motor_asyncio.AsyncIOMotorClient(
-    f"mongodb+srv://{config('mongouser')}:{config('mongopass')}@cluster0.gwgddie.mongodb.net/?retryWrites=true&w=majority"
-)
+cluster = motor.motor_asyncio.AsyncIOMotorClient(config("mongouri"))
 db = cluster.bot
 
 # initialize local storage
