@@ -37,7 +37,7 @@ class typing(Extension):
         self.logger.info(
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )
-        self._typing.start()
+        self._typing.start(self)
 
     @create_task(IntervalTrigger(5))
     async def _typing(self):
