@@ -55,16 +55,16 @@ operators = {
 
 
 def eval_expr(expr):
-    return eval_(ast.parse(expr, mode="eval").body)
+    return _eval_expr(ast.parse(expr, mode="eval").body)
 
 
-def eval_(node):
+def _eval_expr(node):
     if isinstance(node, ast.Num):
         return node.n
     elif isinstance(node, ast.BinOp):
-        return operators[type(node.op)](eval_(node.left), eval_(node.right))
+        return operators[type(node.op)](_eval_expr(node.left), _eval_expr(node.right))
     elif isinstance(node, ast.UnaryOp):
-        return operators[type(node.op)](eval_(node.operand))
+        return operators[type(node.op)](_eval_expr(node.operand))
     else:
         raise TypeError(node)
 
@@ -84,7 +84,7 @@ class counting(PersistenceExtension):
         for i in msg.content:
             if i not in "0123456789+-*/^":
                 return
-        async with aiosqlite.connect("./storage.db") as db:
+        async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(
                 f"SELECT * FROM counting WHERE channel={msg.channel_id}"
             ) as cursor:
@@ -120,7 +120,7 @@ class counting(PersistenceExtension):
         for i in msg.content:
             if i not in "0123456789+-*/^":
                 return
-        async with aiosqlite.connect("./storage.db") as db:
+        async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(
                 f"SELECT * FROM counting WHERE channel={msg.channel_id}"
             ) as cursor:
@@ -138,7 +138,7 @@ class counting(PersistenceExtension):
                     )
                 )
 
-    @extension_command(default_member_permissions=Permissions.MANAGE_CHANNELS)
+    @extension_command(dm_permission=False)
     async def counting(self, *args, **kwargs):
         ...
 
@@ -148,7 +148,9 @@ class counting(PersistenceExtension):
         """數數字遊戲的設定"""
         if not channel:
             channel = await ctx.get_channel()
-        async with aiosqlite.connect("./storage.db") as db:
+        if not await ctx.has_permissions(Permissions.MANAGE_CHANNELS):
+            return await ctx.send(":x: baka 你沒有權限使用這個指令喔！", ephemeral=True)
+        async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(f"SELECT * FROM counting WHERE guild={ctx.guild_id}") as cursor:
                 data = [i async for i in cursor]
             if data:
@@ -171,7 +173,7 @@ class counting(PersistenceExtension):
                     )
                 ]
                 return await ctx.send(
-                    "我幫這個伺服器設定過數數字遊戲了喔！\n要覆蓋設定嗎？這會重設現時的進度。", components=components, ephemeral=True
+                    "我幫這個伺服器設定過數數字遊戲了！\n要覆蓋設定嗎？現時的進度會消失喔。", components=components, ephemeral=True
                 )
             await db.execute(
                 f"INSERT OR IGNORE INTO counting VALUES ({ctx.guild_id}, {channel.id}, null, 0)"
@@ -185,7 +187,9 @@ class counting(PersistenceExtension):
     @counting.subcommand()
     async def stop(self, ctx: CommandContext):
         """停止數數字遊戲"""
-        async with aiosqlite.connect("./storage.db") as db:
+        if not await ctx.has_permissions(Permissions.MANAGE_CHANNELS):
+            return await ctx.send(":x: baka 你沒有權限使用這個指令喔！", ephemeral=True)
+        async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(f"SELECT * FROM counting WHERE guild={ctx.guild_id}") as cursor:
                 data = [i async for i in cursor]
             if not data:
@@ -201,12 +205,25 @@ class counting(PersistenceExtension):
                 ]
             )
         ]
-        await ctx.send("你確定要停止數數字遊戲嗎？", components=components, ephemeral=True)
+        await ctx.send("你確定要停止數數字遊戲嗎？現時的進度會消失喔。", components=components, ephemeral=True)
+
+    @counting.subcommand()
+    async def current(self, ctx: CommandContext):
+        """查看目前的數字"""
+        async with aiosqlite.connect("./storage/storage.db") as db:
+            async with db.execute(f"SELECT * FROM counting WHERE guild={ctx.guild_id}") as cursor:
+                data = [i async for i in cursor]
+            if not data:
+                return await ctx.send(
+                    f"baka 我印象中好像還沒有幫這個伺服器設定 數數字遊戲 喔！\n請用 </counting settings:{self.client._find_command('counting').id}> 來設定 數數字遊戲。",
+                    ephemeral=True,
+                )
+            await ctx.send(embeds=raweb("忘記了嗎？", f"下個數字是 **{data[0][3] + 1}** 啦！"))
 
     @extension_persistent_component("overwrite_confirm")
     async def _overwrite_confirm(self, ctx: ComponentContext, package):
         channel = await get(self.client, Channel, object_id=int(package))
-        async with aiosqlite.connect("./storage.db") as db:
+        async with aiosqlite.connect("./storage/storage.db") as db:
             await db.execute(
                 f"INSERT OR IGNORE INTO counting VALUES ({ctx.guild_id}, {channel.id}, null, 0)"
             )
@@ -219,7 +236,7 @@ class counting(PersistenceExtension):
     @extension_component("stop_confirm")
     async def _stop_confirm(self, ctx: ComponentContext):
         await ctx.defer(edit_origin=True)
-        async with aiosqlite.connect("./storage.db") as db:
+        async with aiosqlite.connect("./storage/storage.db") as db:
             await db.execute(f"DELETE FROM counting WHERE guild={ctx.guild_id}")
             await db.commit()
         await ctx.edit(
