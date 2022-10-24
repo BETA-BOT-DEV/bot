@@ -61,7 +61,10 @@ import sqlite3
 
 db3 = sqlite3.connect("./storage.db", detect_types=sqlite3.PARSE_DECLTYPES)
 db3.cursor().execute(
-    "CREATE TABLE IF NOT EXISTS `feedback_blocked` (`user` BIGINT NOT NULL, `time` TIMESTAMP NOT NULL, PRIMARY KEY (`user`))"
+    "CREATE TABLE IF NOT EXISTS `feedback_blocked` (`user` BIGINT unsigned NOT NULL, `time` TIMESTAMP NOT NULL, PRIMARY KEY (`user`))"
+)
+db3.cursor().execute(
+    "CREATE TABLE IF NOT EXISTS `counting` (`guild` BIGINT unsigned NOT NULL, `channel` BIGINT unsigned NOT NULL, `user` BIGINT unsigned DEFAULT NULL, `count` BIGINT unsigned NOT NULL DEFAULT '0', PRIMARY KEY (`guild`))"
 )
 db3.commit()
 db3.close()
