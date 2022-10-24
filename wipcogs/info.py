@@ -27,7 +27,6 @@ from interactions import (
     EmbedField,
     EmbedImageStruct,
     Extension,
-    Member,
     User,
     extension_command,
     option,
@@ -38,7 +37,7 @@ from utils import raweb
 
 newline = "\n"
 
-# TODO: styling rework follow /info server detail
+
 class general(Extension):
     def __init__(self, client, **kwargs):
         self.client: Client = client
@@ -66,6 +65,7 @@ class general(Extension):
     @info.subcommand()
     @option(description="要查詢的頻道", channel_types=[ChannelType.GUILD_TEXT])
     async def channel(self, ctx: CommandContext, channel: Channel = None):
+        """查詢頻道資訊"""
         if not channel:
             channel = await ctx.get_channel()
         if channel.type == ChannelType.DM:
@@ -74,14 +74,20 @@ class general(Extension):
             embeds=Embed(
                 description=channel.mention,
                 fields=[
-                    EmbedField(name="名稱", value=channel.name, inline=True),
-                    EmbedField(name="類型", value=channel.type.name.replace("_", " "), inline=True),
-                    EmbedField(name="ID", value=str(channel.id), inline=True),
-                    EmbedField(name="位置", value=str(channel.position), inline=True),
-                    EmbedField(name="NSFW", value="是" if channel.nsfw else "否", inline=True),
+                    EmbedField(name=":hash: 名稱", value=channel.name, inline=True),
                     EmbedField(
-                        name="創建時間",
-                        value=channel.id.timestamp.strftime("%Y-%m-%d %H:%M"),
+                        name=":speech_balloon: 類型",
+                        value=channel.type.name.replace("_", " "),
+                        inline=True,
+                    ),
+                    EmbedField(name=":id: ID", value=str(channel.id), inline=True),
+                    EmbedField(name=":round_pushpin: 位置", value=str(channel.position), inline=True),
+                    EmbedField(
+                        name=":underage: NSFW", value="是" if channel.nsfw else "否", inline=True
+                    ),
+                    EmbedField(
+                        name=":calendar_spiral: 創建時間",
+                        value=f"<t:{round(channel.id.timestamp.timestamp())}:R>",
                         inline=True,
                     ),
                 ],
@@ -95,25 +101,44 @@ class general(Extension):
 
     @user.subcommand(name="detail")
     @option(description="要查詢的用戶")
-    async def user_info(self, ctx: CommandContext, user: Member = None):
+    async def user_info(self, ctx: CommandContext, user: User = None):
+        """查詢用戶資訊"""
         if not user:
-            user = ctx.author
-        await ctx.send("Not done yet")  # TODO: Not done yet
+            user = ctx.user
+        await ctx.send(
+            embeds=Embed(
+                fields=[
+                    EmbedField(name=":id: ID", value=str(user.id), inline=True),
+                    EmbedField(
+                        name=":calendar_spiral: 創建時間",
+                        value=f"<t:{round(user.id.timestamp.timestamp())}:R>",
+                        inline=True,
+                    ),
+                    EmbedField(name=":robot: 機器人", value="是" if user.bot else "否", inline=True),
+                ],
+                author=EmbedAuthor(
+                    name=f"{user.username}#{user.discriminator}", icon_url=user.avatar_url
+                ),
+                color=randint(0, 0xFFFFFF),
+            )
+        )
 
     @user.subcommand(name="avatar")
     @option(description="要查詢的用戶")
     async def user_avatar(self, ctx: CommandContext, user: User = None):
+        """取得用戶的頭像"""
         if not user:
             user = ctx.user
         await ctx.defer()
         if user.avatar:
             return await ctx.send(embeds=raweb(image=EmbedImageStruct(url=user.avatar_url)))
         else:
-            return await ctx.send(embeds=raweb(desc=":x: baka 這個用戶沒有圖示啦！"))
+            return await ctx.send(embeds=raweb(desc=":x: baka 這個用戶沒有頭像啦！"))
 
     @info.subcommand(name="banner")
     @option(description="要查詢的用戶")
     async def user_banner(self, ctx: CommandContext, user: User = None):
+        """取得用戶的橫幅"""
         if not user:
             user = ctx.user
         await ctx.defer()
@@ -128,6 +153,7 @@ class general(Extension):
 
     @server.subcommand(name="detail")
     async def server_info(self, ctx: CommandContext):
+        """查詢伺服器資訊"""
         await ctx.get_channel()
         if ctx.channel.type == ChannelType.DM:
             return await ctx.send(":x: baka 沒有伺服器要我怎樣查詢！", ephemeral=True)
@@ -181,6 +207,7 @@ class general(Extension):
 
     @server.subcommand(name="icon")
     async def server_icon(self, ctx: CommandContext):
+        """取得伺服器圖示"""
         await ctx.get_channel()
         if ctx.channel.type == ChannelType.DM:
             return await ctx.send(":x: baka 沒有伺服器要我怎樣查詢！", ephemeral=True)
@@ -192,6 +219,7 @@ class general(Extension):
 
     @server.subcommand(name="banner")
     async def server_banner(self, ctx: CommandContext):
+        """取得伺服器橫幅"""
         await ctx.get_channel()
         if ctx.channel.type == ChannelType.DM:
             return await ctx.send(":x: baka 沒有伺服器要我怎樣查詢！", ephemeral=True)
@@ -207,6 +235,7 @@ class general(Extension):
 
     @_bot.subcommand(name="detail")
     async def bot_info(self, ctx: CommandContext):
+        """查詢機器人資訊"""
         ...  # TODO: 這裡還沒寫完
 
     @_bot.subcommand(name="status")
