@@ -59,7 +59,7 @@ db = cluster.bot
 logger.info("Initializing local storage.")
 import sqlite3
 
-db3 = sqlite3.connect("./storage.db", detect_types=sqlite3.PARSE_DECLTYPES)
+db3 = sqlite3.connect("./storage/storage.db", detect_types=sqlite3.PARSE_DECLTYPES)
 db3.cursor().execute(
     "CREATE TABLE IF NOT EXISTS `feedback_blocked` (`user` BIGINT unsigned NOT NULL, `time` TIMESTAMP NOT NULL, PRIMARY KEY (`user`))"
 )

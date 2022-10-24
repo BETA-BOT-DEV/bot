@@ -97,7 +97,7 @@ class feedback(PersistenceExtension):
     async def feedback(self, ctx: CommandContext):
         """想對我的開發者說些什麼嗎？"""
         await ctx.defer(ephemeral=True)
-        async with aiosqlite.connect("./storage.db") as db, db.execute(
+        async with aiosqlite.connect("./storage/storage.db") as db, db.execute(
             f"SELECT * FROM feedback_blocked WHERE user={ctx.user.id}"
         ) as cursor:
             data = [i async for i in cursor]
@@ -114,7 +114,7 @@ class feedback(PersistenceExtension):
 
     @extension_component("feedback")
     async def _feedback_select(self, ctx: ComponentContext, selected):
-        async with aiosqlite.connect("./storage.db") as db, db.execute(
+        async with aiosqlite.connect("./storage/storage.db") as db, db.execute(
             f"SELECT * FROM feedback_blocked WHERE user={ctx.user.id}"
         ) as cursor:
             data = [i async for i in cursor]
@@ -410,7 +410,7 @@ class feedback(PersistenceExtension):
         if ctx.user.id != self.client.me.owner.id:
             return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。", ephemeral=True)
         await ctx.defer(edit_origin=True)
-        async with aiosqlite.connect("./storage.db") as db:
+        async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(
                 f"SELECT * FROM feedback_blocked WHERE user={package[0]}"
             ) as cursor:
@@ -482,7 +482,7 @@ class feedback(PersistenceExtension):
         if ctx.user.id != self.client.me.owner.id:
             return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。", ephemeral=True)
         await ctx.defer(edit_origin=True)
-        async with aiosqlite.connect("./storage.db") as db:
+        async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(
                 f"SELECT * FROM feedback_blocked WHERE user={package[0]}"
             ) as cursor:
