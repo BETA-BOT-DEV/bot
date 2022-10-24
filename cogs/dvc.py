@@ -136,7 +136,7 @@ class dvc(PersistenceExtension):
         document = await self._dvc.find_one({"_id": int(ctx.guild_id)}, {"keep": 1, "_id": 1})
         if not document:
             return await ctx.send(
-                f":x: baka 我印象中好像還沒有幫這個伺服器設定 動態語音 喔！\n請用 </dvc settings:{self.client._find_command('dvc').id}> 來設定 動態語音",
+                f":x: baka 我印象中好像還沒有幫這個伺服器設定 動態語音 喔！\n請用 </dvc settings:{self.client._find_command('dvc').id}> 來設定 動態語音。",
                 ephemeral=True,
             )
         if "keep" in document:
