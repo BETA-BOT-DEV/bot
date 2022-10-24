@@ -281,17 +281,17 @@ class fun(PersistenceExtension):
         await ctx.send(embeds=raweb("我來幫你翻譯了！你想翻譯到什麼語言？"), components=components, ephemeral=True)
 
     @extension_persistent_component("message_translate")
-    async def _message_translate(self, ctx: ComponentContext, package):
+    async def _message_translate(self, ctx: ComponentContext, package, selected=None):
         await ctx.defer(edit_origin=True)
-        target = ctx.data.values[0]
+        target = selected[0] or ctx.data.values[0]
         text = (
             await get(self.client, Message, object_id=int(package[0]), parent_id=int(package[1]))
         ).content
         resp, lang = await translate(text, target)
         if resp == 429:
-            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><", ephemeral=True)
+            return await ctx.edit(":x: 對不起！我被伺服器限制速率啦！ ><", components=[], ephemeral=True)
         elif resp == 456:
-            return await ctx.send(":x: 對不起！我這個月的翻譯限額用盡了！ ><", ephemeral=True)
+            return await ctx.edit(":x: 對不起！我這個月的翻譯限額用盡了！ ><", components=[], ephemeral=True)
         else:
             await ctx.edit(
                 embeds=Embed(
