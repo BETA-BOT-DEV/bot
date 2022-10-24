@@ -50,7 +50,7 @@ class dvc(PersistenceExtension):
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )
 
-    # TODO: Consider rework
+    # TODO: Consider rework (setup)
     @extension_listener()
     async def on_voice_state_update(self, before: VoiceState, after: VoiceState):
         if after.joined:
@@ -99,7 +99,7 @@ class dvc(PersistenceExtension):
         modal = Modal(
             title="設定動態語音",
             custom_id=str(
-                PersistentCustomID(self.client, "dvc_settings", [str(lobby.id), str(category.id)])
+                PersistentCustomID(self.client, "dvc_settings", [int(lobby.id), int(category.id)])
             ),
             components=[
                 TextInput(
@@ -140,12 +140,12 @@ class dvc(PersistenceExtension):
                 ephemeral=True,
             )
         if "keep" in document:
-            if str(channel.id) in document["keep"]:
+            if int(channel.id) in document["keep"]:
                 return await ctx.send(":x: baka 這個語音頻道已經被保留了喔！", ephemeral=True)
             else:
-                document["keep"].append(str(channel.id))
+                document["keep"].append(int(channel.id))
         else:
-            document["keep"] = [str(channel.id)]
+            document["keep"] = [int(channel.id)]
         await self._dvc.update_one(
             {"_id": int(ctx.guild_id)}, {"$set": {"keep": document["keep"]}}, upsert=True
         )
@@ -154,7 +154,7 @@ class dvc(PersistenceExtension):
         )
 
     @extension_persistent_modal("dvc_settings")
-    async def _dvc_settings(self, ctx: CommandContext, package: List[str], dvc_settings_name: str):
+    async def _dvc_settings(self, ctx: CommandContext, package: List[int], dvc_settings_name: str):
         await ctx.send(
             f"我會把設定記住的！\n你可以隨時用 </dvc settings:{self.client._find_command('dvc').id}> 回來修改設定喔！",
             ephemeral=True,
