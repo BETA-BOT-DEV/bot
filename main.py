@@ -30,6 +30,7 @@ from interactions import (
     ComponentContext,
     Embed,
     EmbedField,
+    HTTPClient,
     Intents,
     Permissions,
     PresenceActivity,
@@ -83,6 +84,10 @@ for i in os.listdir("./wipcogs"):
 
 @client.event
 async def on_start():
+    if isinstance(client._http, str):
+        logger.debug("Patching HTTPClient.")
+        client._http = HTTPClient(client._http)
+
     logger.info("Client has started.")
     bot = await client._http.get_self()
     logger.info(f"Logged in as {bot['username']}#{bot['discriminator']} ({bot['id']})")
