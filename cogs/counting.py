@@ -93,7 +93,7 @@ class counting(PersistenceExtension):
                 return
             try:
                 value = eval_expr(msg.content)
-            except TypeError:
+            except (TypeError, ZeroDivisionError):
                 return
             if data[0][3] != 0 and data[0][2] and data[0][2] == msg.author.id:
                 await msg.create_reaction("❌")
@@ -129,7 +129,7 @@ class counting(PersistenceExtension):
                 return
             try:
                 value = eval_expr(msg.content)
-            except TypeError:
+            except (TypeError, ZeroDivisionError):
                 return
             if round(value) == data[0][3]:
                 await (await msg.get_channel()).send(
