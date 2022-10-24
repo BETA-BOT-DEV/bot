@@ -65,6 +65,7 @@ class generate(Extension):
         """摸一個用戶的頭"""
         if (url := user.user.avatar_url).startswith("https://cdn.discordapp.com/embed/avatars/"):
             return await ctx.send(":x: baka 我摸不到沒有頭像的人啦！", ephemeral=True)
+        await ctx.defer()
         dest = BytesIO()
         async with aiohttp.ClientSession() as s, s.get(url) as r:
             petpet.make(BytesIO(await r.content.read()), dest)
