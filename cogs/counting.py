@@ -79,7 +79,7 @@ class counting(PersistenceExtension):
 
     @extension_listener()
     async def on_message_create(self, msg: Message):
-        if msg.author.bot:
+        if not msg.content or (msg.author and msg.author.bot):
             return
         for i in msg.content:
             if i not in "0123456789+-*/^":
@@ -115,7 +115,7 @@ class counting(PersistenceExtension):
 
     @extension_listener()
     async def on_message_delete(self, msg: Message):
-        if msg.author.bot:
+        if not msg.content or (msg.author and msg.author.bot):
             return
         for i in msg.content:
             if i not in "0123456789+-*/^":

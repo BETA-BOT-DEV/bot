@@ -11,7 +11,10 @@
 #                   |___||__| /____  >|____|_  /\__   | |__| |____/
 #                                  \/        \/    |__|
 
+import binascii
 import os
+import re
+from base64 import b64decode
 from datetime import datetime
 
 from interactions import (
@@ -19,6 +22,7 @@ from interactions import (
     Client,
     CommandContext,
     Extension,
+    LibraryException,
     Message,
     Permissions,
     Role,
@@ -42,6 +46,42 @@ class protect(Extension):
         self.logger.info(
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )
+
+    @extension_listener(name="on_message_create")
+    async def token_check(self, message: Message):
+        possible = [
+            i
+            for i in re.findall(
+                r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27,}", message.content
+            )
+        ]
+        for token in possible:
+            try:
+                validate = b64decode(token.split(".")[0] + "==", validate=True)
+            except binascii.Error:
+                continue
+            else:
+                if validate.isdigit():
+                    try:
+                        await message.delete()
+                    except LibraryException:
+                        await message.reply(
+                            message.author.mention,
+                            embeds=raweb(
+                                "發現TOKEN！",
+                                "你的訊息包含了Discord的TOKEN，但我沒有適當的權限為你刪除!\n為安全起見請前往 [Discord Developer Portal](<https://discord.com/developers/applications>) 進行重設。",
+                            ),
+                        )
+                    else:
+                        await (await message.get_channel()).send(
+                            message.author.mention,
+                            embeds=raweb(
+                                "發現TOKEN！",
+                                "你的訊息包含了Discord的TOKEN，我已經為你刪除了!\n為安全起見請前往 [Discord Developer Portal](<https://discord.com/developers/applications>) 進行重設。",
+                            ),
+                        )
+                    finally:
+                        break
 
     @extension_listener()
     async def on_message_create(self, message: Message):
@@ -93,21 +133,26 @@ class protect(Extension):
         )
         if not doc:
             return await ctx.send(":x: baka 最近12小時沒有人在這個伺服器@過你 (@role 暫不適用)")
+        author = "我啦" if doc["author"] == int(self.client.me.id) else f" <@{doc['author']}>"
         await ctx.send(
             embeds=raweb(
                 "找到了！",
-                f"最後一次在這個伺服器@你的人是 <@{doc['author']}>\nUTC時間是 {doc['create'].strftime('%Y-%m-%d %H:%M:%S')}",
+                f"最後一次在這個伺服器@你的人是{author}\nUTC時間是 {doc['create'].strftime('%Y-%m-%d %H:%M:%S')}",
             )
         )
 
     @extension_listener()
     async def on_message_delete(self, message: Message):
-        if not message.mentions and not message.mention_everyone and not message.mention_roles:
+        if message.author.id == self.client.me.id or (
+            not message.mentions and not message.mention_everyone and not message.mention_roles
+        ):
             return
         everyone = False
         roles = []
         victims = []
-        if message.mention_everyone:
+        if message.mention_everyone and await message.member.has_permissions(
+            Permissions.MENTION_EVERYONE
+        ):
             everyone = True
         if message.mention_roles:
             for i in message.mention_roles:
