@@ -69,6 +69,18 @@ db3.cursor().execute(
 db3.commit()
 db3.close()
 
+# initialize twitter api client
+logger.info("Initializing tweepy client.")
+import tweepy.asynchronous.client
+
+tw = tweepy.asynchronous.client.AsyncClient(
+    config("twitterbearer"),
+    config("twitter"),
+    config("twittersecret"),
+    config("twitteraccess"),
+    config("twitteraccesssecret"),
+)
+
 # load interactions extensions
 logger.info("Loading interactions extensions.")
 client.load("interactions.ext.files")
@@ -79,10 +91,10 @@ client.load("interactions.ext.persistence", cipher_key=config("cipher"))
 logger.info("Loading client extensions.")
 for i in os.listdir("./cogs"):
     if i.endswith(".py"):
-        client.load(f"cogs.{i[:-3]}", logger=logger, db=db, version=version)
+        client.load(f"cogs.{i[:-3]}", logger=logger, version=version, db=db, tw=tw)
 for i in os.listdir("./wipcogs"):
     if i.endswith(".py"):
-        client.load(f"wipcogs.{i[:-3]}", logger=logger, db=db, version=version)
+        client.load(f"wipcogs.{i[:-3]}", logger=logger, version=version, db=db, tw=tw)
 
 
 @client.event
