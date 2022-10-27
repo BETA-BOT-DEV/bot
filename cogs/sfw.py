@@ -41,7 +41,7 @@ class sfw(Extension):
 
     @image.subcommand()
     async def neko(self, ctx: CommandContext):
-        """ "來看看可愛的貓娘吧！"""
+        """來看看可愛的貓娘吧！"""
         await ctx.defer()
         match randint(0, 6):
             case 0:
