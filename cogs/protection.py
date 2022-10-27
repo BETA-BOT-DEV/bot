@@ -143,8 +143,10 @@ class protect(Extension):
 
     @extension_listener()
     async def on_message_delete(self, message: Message):
-        if message.author.id == self.client.me.id or (
-            not message.mentions and not message.mention_everyone and not message.mention_roles
+        if (
+            not message.author
+            or message.author.id == self.client.me.id
+            or (not message.mentions and not message.mention_everyone and not message.mention_roles)
         ):
             return
         everyone = False
