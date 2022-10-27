@@ -121,20 +121,41 @@ class twitter(Extension):
         )
 
     @twitter.subcommand()
-    @option(description="搜尋內容", max_length=512)
-    @option(description="顯示推文的數量", max_value=10, min_value=1)
-    async def search(self, ctx: CommandContext, query: str, limit: int = 5):
-        """搜尋最新的推文"""
-        await ctx.defer()
+    @option(description="搜尋內容", max_length=128)
+    @option(description="搜尋用戶", max_length=16)
+    @option(description="搜尋#hashtag", max_length=128)
+    @option(description="顯示推文的數量 (預設: 5)", max_value=10, min_value=1)
+    @option(description="是否包含回覆內容 (預設: 否)")
+    async def search(
+        self,
+        ctx: CommandContext,
+        query: str = "",
+        user: str = "",
+        hashtag: str = "",
+        limit: int = 5,
+        reply: bool = False,
+    ):
+        """搜尋最近的推文"""
+        if not user and not query and not hashtag:
+            return await ctx.send(":x: baka 你沒有指定搜尋內容啦！", ephemeral=True)
+        if user:
+            if not re.compile(r"^@?(\w){1,15}$").match(user):
+                return await ctx.send(":x: baka Twitter用戶名稱格式錯誤啦！", ephemeral=True)
+            else:
+                if user.startswith("@"):
+                    user = user[1:]
+        if hashtag:
+            hashtag = [i[1:] if i.startswith("#") else i for i in hashtag.split(" ")]
         tweets = await self.tw.search_recent_tweets(
-            query,
+            query=f"""{f"{query} " if query else ''}{f'from:{user} ' if user else ''}{f"#{' #'.join(hashtag)} " if hashtag else ''}{"-is:reply " if not reply else ''}-is:retweet""",
             tweet_fields=["author_id", "created_at", "text"],
             user_fields=["name", "username"],
             expansions=["author_id"],
             sort_order="recency",
         )
         if not tweets.data:
-            return await ctx.send(f":x: 我找不到關於 **{query}** 的推文！", ephemeral=True)
+            return await ctx.send(":x: 我找不到相關的推文！", ephemeral=True)
+        await ctx.defer()
         users = {u["id"]: u for u in tweets.includes["users"]}
         ef = []
         for tweet in tweets.data:
@@ -150,7 +171,7 @@ class twitter(Extension):
         await ctx.send(
             embeds=Embed(
                 title="找到了！",
-                description=f"**{limit}** 個最新關於 **{markdown(query)}** 的推文",
+                description=f"**{min(limit, len(ef))}** 個推文",
                 fields=ef[:limit] if len(ef) > limit else ef,
                 color=0x1DA1F2,
             )
