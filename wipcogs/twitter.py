@@ -133,6 +133,8 @@ class twitter(Extension):
             expansions=["author_id"],
             sort_order="recency",
         )
+        if not tweets.data:
+            return await ctx.send(f":x: 我找不到關於 **{query}** 的推文！", ephemeral=True)
         users = {u["id"]: u for u in tweets.includes["users"]}
         ef = []
         for tweet in tweets.data:
