@@ -285,6 +285,7 @@ class feedback(PersistenceExtension):
                         ]
                     )
                 ]
+        await ctx.send("收到你的回饋了！我們會做的更好的！")
         await Channel(
             **await self.client._http.create_dm(recipient_id=int(self.client.me.owner.id)),
             _client=self.client._http,
