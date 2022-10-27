@@ -16,7 +16,6 @@ import re
 
 import tweepy.asynchronous.client
 from interactions import (
-    Choice,
     Client,
     CommandContext,
     Embed,
@@ -29,6 +28,12 @@ from interactions import (
 from loguru._logger import Logger
 
 newline = "\n"
+
+
+def markdown(content):
+    for ch in ["*", "_", "~", "`"]:
+        content = content.replace(ch, "\\" + ch)
+    return content
 
 
 class twitter(Extension):
@@ -118,20 +123,15 @@ class twitter(Extension):
     @twitter.subcommand()
     @option(description="搜尋內容", max_length=512)
     @option(description="顯示推文的數量", max_value=10, min_value=1)
-    @option(
-        description="推文的順序",
-        choices=[Choice(name="最新", value="最新"), Choice(name="最相關", value="最相關")],
-    )
-    async def search(self, ctx: CommandContext, query: str, limit: int = 5, sort: str = "最新"):
-        """搜尋推文"""
+    async def search(self, ctx: CommandContext, query: str, limit: int = 5):
+        """搜尋最新的推文"""
         await ctx.defer()
-        sorting = "relevancy" if sort == "最相關" else "recency"
         tweets = await self.tw.search_recent_tweets(
             query,
             tweet_fields=["author_id", "created_at", "text"],
             user_fields=["name", "username"],
             expansions=["author_id"],
-            sort_order=sorting,
+            sort_order="recency",
         )
         users = {u["id"]: u for u in tweets.includes["users"]}
         ef = []
@@ -142,13 +142,13 @@ class twitter(Extension):
             ef.append(
                 EmbedField(
                     name=f"{author['name']} (@{author['username']})",
-                    value=f"[**[推文連結🔗]**]({turl})\n{content}",
+                    value=f"[**[推文連結🔗]**]({turl})\n{markdown(content)}",
                 )
             )
         await ctx.send(
             embeds=Embed(
                 title="找到了！",
-                description=f"**{limit}** 個關於 **{query}** 的 **{sort}** 推文",
+                description=f"**{limit}** 個最新關於 **{markdown(query)}** 的推文",
                 fields=ef[:limit] if len(ef) > limit else ef,
                 color=0x1DA1F2,
             )
