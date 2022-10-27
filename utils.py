@@ -215,7 +215,7 @@ async def bullshit_generator(topic: str, length: int):
         generated = ""
         while len(generated) < length:
             r = randint(0, 99)
-            if r < 3 and generated and generated[-1] in "。？！?!":
+            if r < 2 and generated and generated[-1] in "。？！?!":
                 sentence = "\n\n"
             elif r < 25:
                 sentence = (
