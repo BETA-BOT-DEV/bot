@@ -84,7 +84,7 @@ tw = tweepy.asynchronous.client.AsyncClient(
 # load interactions extensions
 logger.info("Loading interactions extensions.")
 client.load("interactions.ext.files")
-client.load("interactions.ext.help")
+# client.load("interactions.ext.help")
 client.load("interactions.ext.persistence", cipher_key=config("cipher"))
 
 # load cogs
