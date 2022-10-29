@@ -211,6 +211,7 @@ class help(Extension):
 
     @extension_command()
     async def help(self, ctx: CommandContext):
+        """顯示幫助訊息"""
         await ctx.get_channel()
         await ctx.send(
             embeds=maineb,
@@ -252,7 +253,7 @@ class help(Extension):
     async def _help_command_select(self, ctx: ComponentContext, selected=None):
         await ctx.defer(edit_origin=True)
         cmds = {
-            "help": ["顯示幫助頁面。", "/help", "/help", False],
+            "help": ["顯示幫助訊息。", "/help", "/help", False],
             "info": ["顯示各種資訊。", "/info <子指令> <參數>", f"/info user @{ctx.author.name}", False],
             "whopinged": ["找出過去12小時內最後在這個伺服器@你的人。", "/whopinged", "/whopinged", False],
             "feedback": ["回報問題或是提出建議。", "/feedback", "/feedback", False],
