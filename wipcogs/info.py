@@ -30,6 +30,7 @@ from interactions import (
     User,
     extension_command,
     option,
+    get,
 )
 from loguru._logger import Logger
 
@@ -142,6 +143,7 @@ class general(Extension):
         if not user:
             user = ctx.user
         await ctx.defer()
+        user = await get(self.client, User, object_id=user.id)
         if user.banner:
             return await ctx.send(embeds=raweb(image=EmbedImageStruct(url=user.banner_url)))
         else:
@@ -236,7 +238,7 @@ class general(Extension):
     @_bot.subcommand(name="detail")
     async def bot_info(self, ctx: CommandContext):
         """查詢機器人資訊"""
-        ...  # TODO: 這裡還沒寫完
+        await ctx.send(":x: 我還沒有學會這個指令！")  # TODO: 這裡還沒寫完
 
     @_bot.subcommand(name="status")
     async def bot_status(self, ctx: CommandContext):

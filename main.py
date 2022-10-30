@@ -44,7 +44,7 @@ from utils import logger
 # create the bot instance
 logger.info("Initializing discord client.")
 client = VoiceClient(
-    token=config("token"),
+    token=config("dev"),  # change this to "token" if deploying on production server
     intents=Intents.ALL,
 )
 
