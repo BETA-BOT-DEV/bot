@@ -326,7 +326,7 @@ class fun(PersistenceExtension):
     async def tictactoe(self, ctx: CommandContext):
         """和我來玩一場井字遊戲！"""
         await ctx.defer()
-        ended, board, p1win, p2win, tie = self.build_board()
+        board, p1win, p2win, tie = self.build_board()
         await ctx.send("遊戲開始了！你先放吧！", components=board)
 
     @extension_persistent_component("ttt-button")
@@ -334,7 +334,7 @@ class fun(PersistenceExtension):
         if ctx.author.id != ctx.message.interaction.user.id:
             return await ctx.send(":x: baka 這不是你的遊戲啦！", ephemeral=True)
         await ctx.defer(edit_origin=True)
-        ended, board, p1win, p2win, tie = self.build_board(ctx.message.components, package)
+        board, p1win, p2win, tie = self.build_board(ctx.message.components, package)
         if p1win:
             await ctx.edit("你贏了！", components=board)
         elif p2win:
