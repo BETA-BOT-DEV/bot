@@ -16,11 +16,17 @@ import os
 import re
 from base64 import b64decode
 from datetime import datetime
+from enum import Enum
 
+import aiohttp
+import decouple
 from interactions import (
     ChannelType,
     Client,
     CommandContext,
+    Embed,
+    EmbedField,
+    EmbedFooter,
     Extension,
     LibraryException,
     Message,
@@ -36,16 +42,86 @@ from utils import raweb
 
 newline = "\n"
 
+url_regex = re.compile(
+    r"(http|https)(:\/\/)([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
+)
+
+
+class threatType(Enum):
+    MALWARE = "惡意程式"
+    SOCIAL_ENGINEERING = "社會工程"
+    UNWANTED_SOFTWARE = "潛在附加軟件"
+    POTENTIALLY_HARMFUL_APPLICATION = "潛在有害程式"
+
+
+class platformType(Enum):
+    WINDOWS = "Windows"
+    LINUX = "Linux"
+    ANDROID = "Android"
+    OSX = "MacOS X"
+    IOS = "iOS"
+    ALL_PLATFORMS = "所有平台"
+    CHROME = "Chrome"
+
 
 class protect(Extension):
     def __init__(self, client, **kwargs):
         self.client: Client = client
         self.logger: Logger = kwargs.get("logger")
+        self.version = kwargs.get("version")
         self.db = kwargs.get("db")
         self._ping = self.db.ping
         self.logger.info(
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )
+
+    # TEST: http://malware.testing.google.test/testing/malware/*
+    @extension_listener(name="on_message_create")
+    async def link_check(self, message: Message):
+        if message.content:
+            linklist = url_regex.findall(message.content)
+            if linklist:
+                # api lookup
+                async with aiohttp.ClientSession() as s, s.post(
+                    f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={decouple.config('googleapi')}",
+                    headers={"Content-Type": "application/json"},
+                    data=str(
+                        {
+                            "client": {"clientId": "BETA BOT", "clientVersion": self.version},
+                            "threatInfo": {
+                                "threatTypes": [
+                                    "MALWARE",
+                                    "SOCIAL_ENGINEERING",
+                                    "UNWANTED_SOFTWARE",
+                                    "POTENTIALLY_HARMFUL_APPLICATION",
+                                ],
+                                "platformTypes": ["ANY_PLATFORM"],
+                                "threatEntryTypes": ["URL"],
+                                "threatEntries": [
+                                    {"url": i} for i in [*set(["".join(i) for i in linklist])]
+                                ],
+                            },
+                        }
+                    ),
+                ) as r:
+                    resp = await r.json()
+                if "matches" in resp:
+                    await message.reply(
+                        embeds=Embed(
+                            title="找到可能有害的連結了！",
+                            description="資料僅供參考，未必完全準確，請自行注意連結是否安全喔！",
+                            fields=[
+                                EmbedField(
+                                    name=f"url: ||<{i['threat']['url']}>||",
+                                    value=f"威脅類別: {threatType[i['threatType']]}\n影響平台: {platformType[i['platformType']]}",
+                                    inline=False,
+                                )
+                                for i in resp["matches"]
+                            ],
+                            footer=EmbedFooter(text="Google Safe Browsing API"),
+                            timestamp=datetime.utcnow(),
+                        )
+                    )
 
     @extension_listener(name="on_message_create")
     async def token_check(self, message: Message):
@@ -83,8 +159,8 @@ class protect(Extension):
                     finally:
                         break
 
-    @extension_listener()
-    async def on_message_create(self, message: Message):
+    @extension_listener(name="on_message_create")
+    async def ping_check(self, message: Message):
         if not (message.mention_everyone or message.mentions):
             return
         try:
