@@ -324,7 +324,7 @@ class fun(PersistenceExtension):
 
     @extension_command()
     async def tictactoe(self, ctx: CommandContext):
-        """和我來一場井字遊戲！"""
+        """和我來玩一場井字遊戲！"""
         await ctx.defer()
         ended, board, p1win, p2win, tie = self.build_board()
         await ctx.send("遊戲開始了！你先放吧！", components=board)

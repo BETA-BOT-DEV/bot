@@ -117,8 +117,7 @@ fun_select = ActionRow(
             options=[
                 SelectOption(label=i, value=i)
                 for i in [
-                    "twitter",
-                    "typing",
+                    "tictactoe",
                     "say",
                     "8ball",
                     "google-tutorial",
@@ -128,6 +127,8 @@ fun_select = ActionRow(
                     "random",
                     "unknown",
                     "whatanime",
+                    "twitter",
+                    "typing",
                 ]
             ],
             min_values=1,
@@ -262,6 +263,7 @@ class help(Extension):
             "generate": ["隨機生成各種圖片。", "/generate <生成類別> <參數>", "/generate qr hello", False],
             "twitter": ["搜尋Twitter", "/twitter <子指令> <搜尋>", "/twitter user @itsrqtl", False],
             "typing": ["讓我不斷輸入中...", "/typing <子指令>", "/typing start", False],
+            "tictactoe": ["和我來玩一場井字遊戲！", "/tictactoe", "", False],
             "say": ["讓我說話。", "/say <內容>", "/say hello", False],
             "8ball": ["問問神奇8號球的答案？", "/8ball <問題>", "/8ball 今天天氣好嗎？", False],
             "google-tutorial": [
