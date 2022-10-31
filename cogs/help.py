@@ -211,11 +211,7 @@ class help(Extension):
 
     @extension_command()
     async def help(self, ctx: CommandContext):
-<<<<<<< HEAD
-        """顯示幫助訊息"""
-=======
         """需要一點幫助嗎？"""
->>>>>>> b1582cb (feat: public beta)
         await ctx.get_channel()
         await ctx.send(
             embeds=maineb,
