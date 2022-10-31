@@ -184,7 +184,7 @@ class hentai(Extension):
                 url = await api_request("https://neko-love.xyz/api/v1/nekolewd")
                 await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
             case 3:
-                url = await api_request("https://nekos.moe/api/v1/random/image?nsfw=true")
+                url = await api_request("https://nekos.moe/api/v1/random/image?nsfw=true&tags=cat")
                 await ctx.send(
                     embeds=raweb(
                         image=EmbedImageStruct(

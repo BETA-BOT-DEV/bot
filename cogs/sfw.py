@@ -57,7 +57,7 @@ class sfw(Extension):
                 url = await api_request("https://neko-love.xyz/api/v1/neko")
                 await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
             case 4:
-                url = await api_request("https://nekos.moe/api/v1/random/image?nsfw=false")
+                url = await api_request("https://nekos.moe/api/v1/random/image?nsfw=false&tags=cat")
                 await ctx.send(
                     embeds=raweb(
                         image=EmbedImageStruct(
