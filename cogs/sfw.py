@@ -89,42 +89,42 @@ class sfw(Extension):
 
     @image.subcommand()
     async def kanna(self, ctx: CommandContext):
-        # TODO: Add description
+        """我的主人很懶，沒有留下說明。"""  # TODO: Add description
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=kanna")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @image.subcommand()
     async def kemonomimi(self, ctx: CommandContext):
-        # TODO: Add description
+        """我的主人很懶，沒有留下說明。"""  # TODO: Add description
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=kemonomimi")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @image.subcommand()
     async def holo(self, ctx: CommandContext):
-        # TODO: Add description
+        """我的主人很懶，沒有留下說明。"""  # TODO: Add description
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=holo")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @image.subcommand()
     async def waifu(self, ctx: CommandContext):
-        # TODO: Add description
+        """我的主人很懶，沒有留下說明。"""  # TODO: Add description
         await ctx.defer()
         url = await api_request("https://api.waifu.pics/sfw/waifu")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
 
     @image.subcommand()
     async def megumin(self, ctx: CommandContext):
-        # TODO: Add description
+        """我的主人很懶，沒有留下說明。"""  # TODO: Add description
         await ctx.defer()
         url = await api_request("https://api.waifu.pics/sfw/megumin")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
 
     @image.subcommand()
     async def awoo(self, ctx: CommandContext):
-        # TODO: Add description
+        """我的主人很懶，沒有留下說明。"""  # TODO: Add description
         await ctx.defer()
         url = await api_request("https://api.waifu.pics/sfw/awoo")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
