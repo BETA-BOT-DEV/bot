@@ -32,10 +32,12 @@ from interactions import (
     EmbedField,
     HTTPClient,
     Intents,
+    LibraryException,
     Permissions,
     PresenceActivity,
     PresenceActivityType,
     StatusType,
+    Thread,
 )
 from interactions.ext.lavalink import VoiceClient
 
@@ -142,6 +144,14 @@ async def on_command_error(ctx: CommandContext, error: Exception):
             color=randint(0, 0xFFFFFF),
         )
     )
+
+
+@client.event
+async def on_thread_create(thread: Thread):
+    try:
+        await thread.join()
+    except LibraryException:
+        pass
 
 
 @client.component("destroy")
