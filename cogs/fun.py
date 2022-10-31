@@ -20,8 +20,11 @@ from urllib.parse import quote_plus
 
 import aiohttp
 from interactions import (
+    ActionRow,
     AllowedMentions,
     Attachment,
+    Button,
+    ButtonStyle,
     Channel,
     ChannelType,
     Choice,
@@ -184,6 +187,162 @@ class fun(PersistenceExtension):
         self.logger.info(
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )
+
+    def ttt_btn(self, value, index, disabled):
+        match value:
+            case 0:
+                return Button(
+                    style=ButtonStyle.SECONDARY,
+                    label=" ",
+                    custom_id=str(PersistentCustomID(self.client, "ttt-button", index)),
+                    disabled=disabled,
+                )
+            case 1:
+                disabled = True
+                return Button(
+                    style=ButtonStyle.DANGER,
+                    label="X",
+                    custom_id=str(PersistentCustomID(self.client, "ttt-button", index)),
+                    disabled=disabled,
+                )
+            case 2:
+                disabled = True
+                return Button(
+                    style=ButtonStyle.SUCCESS,
+                    label="O",
+                    custom_id=str(PersistentCustomID(self.client, "ttt-button", index)),
+                    disabled=disabled,
+                )
+            case _:
+                raise ValueError("Invalid value")
+
+    def win(self, board, player):
+        win = False
+        for i in range(3):
+            win = True
+            for j in range(3):
+                if board[i][j] != player:
+                    win = False
+                    break
+            if win:
+                return True
+
+        for i in range(3):
+            win = True
+            for j in range(3):
+                if board[j][i] != player:
+                    win = False
+                    break
+            if win:
+                return True
+
+        win = True
+        for i in range(3):
+            if board[i][i] != player:
+                win = False
+                break
+        if win:
+            return True
+
+        win = True
+        for i in range(3):
+            if board[i][2 - i] != player:
+                win = False
+                break
+        if win:
+            return True
+        return False
+
+    def build_board(self, current=None, update=None):
+        p1win = False
+        p2win = False
+        tie = False
+        if not current:
+            build = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        else:
+            build = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+            available = []
+            for i in range(3):
+                for j in range(3):
+                    match current[i].components[j].label:
+                        case "O":
+                            build[i][j] = 2
+                        case "X":
+                            build[i][j] = 1
+                        case _:
+                            available.append([i, j])
+            if update in [1, 2, 3]:
+                row = 0
+                col = update - 1
+            elif update in [4, 5, 6]:
+                row = 1
+                col = update - 4
+                build[1][update - 4] = 1
+            elif update in [7, 8, 9]:
+                row = 2
+                col = update - 7
+            build[row][col] = 1
+            available.remove([row, col])
+            p1win = self.win(build, 1)
+            if not p1win and len(available) == 0:
+                tie = True
+            if not p1win and not tie:
+                i, j = choice(available)
+                build[i][j] = 2
+                p2win = self.win(build, 2)
+                if not p2win and len(available) == 1:
+                    tie = True
+        ended = True if p1win or p2win or tie else False
+        return (
+            [
+                ActionRow(
+                    components=[
+                        self.ttt_btn(build[0][0], 1, ended),
+                        self.ttt_btn(build[0][1], 2, ended),
+                        self.ttt_btn(build[0][2], 3, ended),
+                    ]
+                ),
+                ActionRow(
+                    components=[
+                        self.ttt_btn(build[1][0], 4, ended),
+                        self.ttt_btn(build[1][1], 5, ended),
+                        self.ttt_btn(build[1][2], 6, ended),
+                    ]
+                ),
+                ActionRow(
+                    components=[
+                        self.ttt_btn(build[2][0], 7, ended),
+                        self.ttt_btn(build[2][1], 8, ended),
+                        self.ttt_btn(build[2][2], 9, ended),
+                    ]
+                ),
+            ],
+            p1win,
+            p2win,
+            tie,
+        )
+
+    @extension_command()
+    async def tictactoe(self, ctx: CommandContext):
+        """和我來一場井字遊戲！"""
+        await ctx.defer()
+        ended, board, p1win, p2win, tie = self.build_board()
+        await ctx.send("遊戲開始了！你先放吧！", components=board)
+
+    @extension_persistent_component("ttt-button")
+    async def ttt_button(self, ctx: ComponentContext, package):
+        if ctx.author.id != ctx.message.interaction.user.id:
+            return await ctx.send(":x: baka 這不是你的遊戲啦！", ephemeral=True)
+        await ctx.defer(edit_origin=True)
+        ended, board, p1win, p2win, tie = self.build_board(ctx.message.components, package)
+        if p1win:
+            await ctx.edit("你贏了！", components=board)
+        elif p2win:
+            await ctx.edit("你輸了！不用灰心，再來一遍就好了！", components=board)
+        elif tie:
+            await ctx.edit("是平手！", components=board)
+        else:
+            await ctx.edit("到你了喔！", components=board)
 
     @extension_command(
         dm_permission=False, default_member_permissions=Permissions.MANAGE_EMOJIS_AND_STICKERS
