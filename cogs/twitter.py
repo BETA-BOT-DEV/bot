@@ -50,11 +50,11 @@ class twitter(Extension):
         ...
 
     @twitter.subcommand()
-    @option(description="用戶名稱")
+    @option(description="使用者名稱")
     async def user(self, ctx: CommandContext, username: str):
-        """尋找Twitter用戶資料"""
+        """尋找Twitter使用者資料"""
         if not re.compile(r"^@?(\w){1,15}$").match(username):
-            return await ctx.send(":x: baka Twitter用戶名稱格式錯誤啦！", ephemeral=True)
+            return await ctx.send(":x: baka Twitter使用者名稱格式錯誤啦！", ephemeral=True)
         else:
             if username.startswith("@"):
                 username = username[1:]
@@ -73,7 +73,7 @@ class twitter(Extension):
                 ],
             )
         if not lookup.data:
-            return await ctx.send(":x: baka 找不到Twitter用戶啦！", ephemeral=True)
+            return await ctx.send(":x: baka 找不到Twitter使用者啦！", ephemeral=True)
         await ctx.defer()
         await ctx.send(
             embeds=Embed(
@@ -122,7 +122,7 @@ class twitter(Extension):
 
     @twitter.subcommand()
     @option(description="搜尋內容", max_length=128)
-    @option(description="搜尋用戶", max_length=16)
+    @option(description="搜尋使用者", max_length=16)
     @option(description="搜尋#hashtag", max_length=128)
     @option(description="顯示推文的數量 (預設: 5)", max_value=10, min_value=1)
     @option(description="是否包含回覆內容 (預設: 否)")
@@ -140,7 +140,7 @@ class twitter(Extension):
             return await ctx.send(":x: baka 你沒有指定搜尋內容啦！", ephemeral=True)
         if user:
             if not re.compile(r"^@?(\w){1,15}$").match(user):
-                return await ctx.send(":x: baka Twitter用戶名稱格式錯誤啦！", ephemeral=True)
+                return await ctx.send(":x: baka Twitter使用者名稱格式錯誤啦！", ephemeral=True)
             else:
                 if user.startswith("@"):
                     user = user[1:]

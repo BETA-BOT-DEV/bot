@@ -62,7 +62,7 @@ class generate(Extension):
     @generate.subcommand()
     @option("使用指令的對象")
     async def pet(self, ctx: CommandContext, user: Member):
-        """摸一個用戶的頭"""
+        """摸一個使用者的頭"""
         if (url := user.user.avatar_url).startswith("https://cdn.discordapp.com/embed/avatars/"):
             return await ctx.send(":x: baka 我摸不到沒有頭像的人啦！", ephemeral=True)
         await ctx.defer()
@@ -87,7 +87,7 @@ class generate(Extension):
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @generate.subcommand()
-    @option("用戶名稱")
+    @option("使用者名稱")
     @option("要發的內容", max_length=280)
     async def faketweet(self, ctx: CommandContext, username: str, text: str):
         """發出假的推文"""

@@ -297,7 +297,7 @@ class help(Extension):
                 False,
             ],
             "whosay": [
-                "根據訊息ID尋找使用 /say 的用戶。",
+                "根據訊息ID尋找使用 /say 的使用者。",
                 "/whosay <訊息ID>",
                 f"/whosay {ctx.message.id}",
                 False,

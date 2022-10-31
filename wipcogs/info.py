@@ -29,12 +29,10 @@ from interactions import (
     Extension,
     User,
     extension_command,
-    option,
     get,
+    option,
 )
 from loguru._logger import Logger
-
-from utils import raweb
 
 newline = "\n"
 
@@ -73,22 +71,21 @@ class general(Extension):
             return await ctx.send(":x: baka 我不能查詢DM頻道！", ephemeral=True)
         await ctx.send(
             embeds=Embed(
-                description=channel.mention,
+                title="頻道查詢結果",
+                description=f"以下是 {channel.mention} 的相關資訊喔！",
                 fields=[
-                    EmbedField(name=":hash: 名稱", value=channel.name, inline=True),
+                    EmbedField(name="**頻道名稱**", value=f"`{channel.name}`", inline=True),
+                    EmbedField(name="**頻道ID**", value=str(channel.id), inline=True),
                     EmbedField(
-                        name=":speech_balloon: 類型",
+                        name="**頻道類型**",
                         value=channel.type.name.replace("_", " "),
                         inline=True,
                     ),
-                    EmbedField(name=":id: ID", value=str(channel.id), inline=True),
-                    EmbedField(name=":round_pushpin: 位置", value=str(channel.position), inline=True),
+                    EmbedField(name="**頻道位置**", value=str(channel.position), inline=True),
+                    EmbedField(name="**NSFW**", value="是" if channel.nsfw else "否", inline=True),
                     EmbedField(
-                        name=":underage: NSFW", value="是" if channel.nsfw else "否", inline=True
-                    ),
-                    EmbedField(
-                        name=":calendar_spiral: 創建時間",
-                        value=f"<t:{round(channel.id.timestamp.timestamp())}:R>",
+                        name="**創建時間**",
+                        value=f"<t:{round(channel.id.timestamp.timestamp())}:F> (<t:{round(channel.id.timestamp.timestamp())}:R>)",
                         inline=True,
                     ),
                 ],
@@ -96,70 +93,48 @@ class general(Extension):
             )
         )
 
-    @info.group()
-    async def user(self, *args, **kwargs):
-        ...
-
-    @user.subcommand(name="detail")
-    @option(description="要查詢的用戶")
-    async def user_info(self, ctx: CommandContext, user: User = None):
-        """查詢用戶資訊"""
+    @info.subcommand()
+    @option(description="要查詢的使用者")
+    async def user(self, ctx: CommandContext, user: User = None):
+        """查詢使用者資訊"""
         if not user:
             user = ctx.user
+        user = await get(self.client, User, object_id=user.id)
         await ctx.send(
             embeds=Embed(
+                title="使用者查詢結果",
+                description=f"以下是 {user.mention} 的相關資訊喔！",
                 fields=[
-                    EmbedField(name=":id: ID", value=str(user.id), inline=True),
                     EmbedField(
-                        name=":calendar_spiral: 創建時間",
-                        value=f"<t:{round(user.id.timestamp.timestamp())}:R>",
+                        name="**使用者名稱**",
+                        value=f"`{user.username}#{user.discriminator}`",
                         inline=True,
                     ),
-                    EmbedField(name=":robot: 機器人", value="是" if user.bot else "否", inline=True),
+                    EmbedField(name="**使用者ID**", value=str(user.id), inline=True),
+                    EmbedField(name="**機器人**", value="是" if user.bot else "否", inline=False),
+                    EmbedField(
+                        name="**創建時間**",
+                        value=f"<t:{round(user.id.timestamp.timestamp())}:F> (<t:{round(user.id.timestamp.timestamp())}:R>)",
+                        inline=True,
+                    ),
                 ],
                 author=EmbedAuthor(
                     name=f"{user.username}#{user.discriminator}", icon_url=user.avatar_url
                 ),
+                thumbnail=EmbedImageStruct(url=user.avatar_url) if user.avatar else None,
+                image=EmbedImageStruct(url=f"{user.banner_url}?size=480") if user.banner else None,
                 color=randint(0, 0xFFFFFF),
             )
         )
 
-    @user.subcommand(name="avatar")
-    @option(description="要查詢的用戶")
-    async def user_avatar(self, ctx: CommandContext, user: User = None):
-        """取得用戶的頭像"""
-        if not user:
-            user = ctx.user
-        await ctx.defer()
-        if user.avatar:
-            return await ctx.send(embeds=raweb(image=EmbedImageStruct(url=user.avatar_url)))
-        else:
-            return await ctx.send(embeds=raweb(desc=":x: baka 這個用戶沒有頭像啦！"))
-
-    @info.subcommand(name="banner")
-    @option(description="要查詢的用戶")
-    async def user_banner(self, ctx: CommandContext, user: User = None):
-        """取得用戶的橫幅"""
-        if not user:
-            user = ctx.user
-        await ctx.defer()
-        user = await get(self.client, User, object_id=user.id)
-        if user.banner:
-            return await ctx.send(embeds=raweb(image=EmbedImageStruct(url=user.banner_url)))
-        else:
-            return await ctx.send(embeds=raweb(desc=":x: baka 這個用戶沒有橫幅啦！"))
-
-    @info.group()
-    async def server(self, *args, **kwargs):
-        ...
-
-    @server.subcommand(name="detail")
-    async def server_info(self, ctx: CommandContext):
+    @info.subcommand()
+    async def server(self, ctx: CommandContext):
         """查詢伺服器資訊"""
         await ctx.get_channel()
         if ctx.channel.type == ChannelType.DM:
             return await ctx.send(":x: baka 沒有伺服器要我怎樣查詢！", ephemeral=True)
         await ctx.defer()
+        await ctx.get_guild()
         owner = await ctx.guild.get_member(ctx.guild.owner_id)
         text = 0
         voice = 0
@@ -169,67 +144,56 @@ class general(Extension):
                 category += 1
             elif i.type in [ChannelType.GUILD_VOICE, ChannelType.GUILD_STAGE_VOICE]:
                 voice += 1
+            elif i.type in [
+                ChannelType.ANNOUNCEMENT_THREAD,
+                ChannelType.PUBLIC_THREAD,
+                ChannelType.PRIVATE_THREAD,
+            ]:
+                continue
             else:
                 text += 1
         await ctx.send(
             embeds=Embed(
+                title="伺服器查詢結果",
+                description=f"以下是 {ctx.guild.name} 伺服器的相關資訊喔！",
                 fields=[
-                    EmbedField(name=":id: ID", value=str(ctx.guild.id), inline=True),
+                    EmbedField(name="**伺服器名稱**", value=f"`{ctx.guild.name}`", inline=True),
+                    EmbedField(name="**伺服器ID**", value=str(ctx.guild.id), inline=True),
+                    EmbedField(name="**伺服器擁有者**", value=owner.mention, inline=True),
                     EmbedField(
-                        name=":calendar_spiral: 創建時間",
-                        value=f"<t:{round(ctx.guild.id.timestamp.timestamp())}:R>",
-                        inline=True,
-                    ),
-                    EmbedField(name=":star: 擁有者", value=owner.mention, inline=True),
-                    EmbedField(
-                        name=":speech_balloon: 頻道數",
+                        name="**頻道數量**",
                         value=f"文字頻道: {text}\n語音頻道: {voice}\n分類: {category}",
                         inline=True,
                     ),
                     EmbedField(
-                        name=":busts_in_silhouette: 成員",
+                        name="**成員資訊**",
                         value=f"成員數: {ctx.guild.member_count}\n身份組: {len(ctx.guild.roles)}",
                         inline=True,
                     ),
                     EmbedField(
-                        name=":arrow_up: 加成",
+                        name="**伺服器加成**",
                         value=f"數量: {ctx.guild.premium_subscription_count if ctx.guild.premium_subscription_count else 0}\n等級: {ctx.guild.premium_tier if ctx.guild.premium_tier else 0}",
                         inline=True,
                     ),
                     EmbedField(
-                        name=":laughing: 表情符號",
+                        name="**伺服器表情符號**",
                         value=f"{len(ctx.guild.emojis)}/{'50'if not ctx.guild.premium_tier or ctx.guild.premium_tier == 0 else '100' if ctx.guild.premium_tier == 1 else '150' if ctx.guild.premium_tier == 2 else '250'}",
+                        inline=True,
+                    ),
+                    EmbedField(
+                        name="**創建時間**",
+                        value=f"<t:{round(ctx.guild.id.timestamp.timestamp())}:F> (<t:{round(ctx.guild.id.timestamp.timestamp())}:R>)",
                         inline=True,
                     ),
                 ],
                 author=EmbedAuthor(name=ctx.guild.name, icon_url=ctx.guild.icon_url),
+                thumbnail=EmbedImageStruct(url=ctx.guild.icon_url) if ctx.guild.icon else None,
+                image=EmbedImageStruct(url=f"{ctx.guild.banner_url}?size=480")
+                if ctx.guild.banner
+                else None,
                 color=randint(0, 0xFFFFFF),
             )
         )
-
-    @server.subcommand(name="icon")
-    async def server_icon(self, ctx: CommandContext):
-        """取得伺服器圖示"""
-        await ctx.get_channel()
-        if ctx.channel.type == ChannelType.DM:
-            return await ctx.send(":x: baka 沒有伺服器要我怎樣查詢！", ephemeral=True)
-        await ctx.defer()
-        if ctx.guild.icon_url:
-            return await ctx.send(embeds=raweb(image=EmbedImageStruct(url=ctx.guild.icon_url)))
-        else:
-            return await ctx.send(embeds=raweb(desc=":x: baka 這個伺服器沒有圖示啦！"))
-
-    @server.subcommand(name="banner")
-    async def server_banner(self, ctx: CommandContext):
-        """取得伺服器橫幅"""
-        await ctx.get_channel()
-        if ctx.channel.type == ChannelType.DM:
-            return await ctx.send(":x: baka 沒有伺服器要我怎樣查詢！", ephemeral=True)
-        await ctx.defer()
-        if ctx.guild.banner_url:
-            return await ctx.send(embeds=raweb(image=EmbedImageStruct(url=ctx.guild.banner_url)))
-        else:
-            return await ctx.send(embeds=raweb(desc=":x: baka 這個伺服器沒有橫幅啦！"))
 
     @info.group(name="bot")
     async def _bot(self, *args, **kwargs):

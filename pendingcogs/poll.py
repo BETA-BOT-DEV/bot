@@ -62,7 +62,7 @@ setting = [
                 options=[
                     SelectOption(label="基礎設定", value="type", description="更改投票問題、描述或選項"),
                     SelectOption(label="身份組設定", value="role", description="更改身份組限制、提及身份組"),
-                    SelectOption(label="其他設定", value="other", description="更改公開投票、每個用戶可選項數"),
+                    SelectOption(label="其他設定", value="other", description="更改公開投票、每個使用者可選項數"),
                 ],
             )
         ]
@@ -99,7 +99,7 @@ class poll(PersistenceExtension):
     @option("限制身份組")
     @option("提及身份組")
     @option("公開投票")
-    @option("每個用戶可選項數")
+    @option("每個使用者可選項數")
     async def create(
         self,
         ctx: CommandContext,
@@ -134,7 +134,7 @@ class poll(PersistenceExtension):
                 ),
                 EmbedField(name="公開投票", value="是" if public else "否", inline=False),
                 EmbedField(
-                    name="每個用戶可選項數", value=multiple if multiple <= len(oplist) else 1, inline=False
+                    name="每個使用者可選項數", value=multiple if multiple <= len(oplist) else 1, inline=False
                 ),
                 EmbedField(
                     name="圖片",
@@ -277,7 +277,7 @@ class poll(PersistenceExtension):
                         components=[
                             Button(
                                 style=ButtonStyle.PRIMARY,
-                                label="修改每個用戶可選項數",
+                                label="修改每個使用者可選項數",
                                 custom_id=str(
                                     PersistentCustomID(
                                         self.client,
@@ -290,7 +290,7 @@ class poll(PersistenceExtension):
                     ),
                 ]
                 await ctx.send(
-                    "其他設定 (上: 公開投票 | 下: 每個用戶可選項數)", components=components, ephemeral=True
+                    "其他設定 (上: 公開投票 | 下: 每個使用者可選項數)", components=components, ephemeral=True
                 )
 
     @extension_modal("poll_config_type")
@@ -346,16 +346,16 @@ class poll(PersistenceExtension):
         message.embeds[0].fields[5].value = "是" if ctx.data.values[0] == "True" else "否"
         embed = Embed(**message.embeds[0]._json)
         await message.edit(embeds=embed, components=setting)
-        await ctx.edit("我記住了新的投票設定！\n其他設定 (上: 公開投票 | 下: 每個用戶可選項數)")
+        await ctx.edit("我記住了新的投票設定！\n其他設定 (上: 公開投票 | 下: 每個使用者可選項數)")
 
     @extension_persistent_component("poll_config_other_multiple")
     async def _poll_config_other_multiple(self, ctx: ComponentContext, package):
         modal = Modal(
-            title="修改每個用戶可選項數",
+            title="修改每個使用者可選項數",
             components=[
                 TextInput(
                     style=TextStyleType.SHORT,
-                    label="每個用戶可選項數",
+                    label="每個使用者可選項數",
                     custom_id=str(PersistentCustomID(self.client, "multiple", int(ctx.message.id))),
                 )
             ],

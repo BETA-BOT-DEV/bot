@@ -16,6 +16,7 @@ import os
 import aiofiles
 from interactions import (
     Channel,
+    ChannelType,
     Client,
     CommandContext,
     Extension,
@@ -53,7 +54,17 @@ class typing(Extension):
         ...
 
     @typing.subcommand()
-    @option("要我開始打字的頻道")
+    @option(
+        "要我開始打字的頻道",
+        channel_type=[
+            ChannelType.GUILD_TEXT,
+            ChannelType.GUILD_ANNOUNCEMENT,
+            ChannelType.PUBLIC_THREAD,
+            ChannelType.PRIVATE_THREAD,
+            ChannelType.ANNOUNCEMENT_THREAD,
+            ChannelType.GUILD_VOICE,
+        ],
+    )
     async def start(self, ctx: CommandContext, channel: Channel = None):
         """讓我開始打字"""
         if not channel:
@@ -72,7 +83,17 @@ class typing(Extension):
         await self.client._http.trigger_typing(int(channel))
 
     @typing.subcommand()
-    @option("要我停止打字的頻道")
+    @option(
+        "要我停止打字的頻道",
+        channel_type=[
+            ChannelType.GUILD_TEXT,
+            ChannelType.GUILD_ANNOUNCEMENT,
+            ChannelType.PUBLIC_THREAD,
+            ChannelType.PRIVATE_THREAD,
+            ChannelType.ANNOUNCEMENT_THREAD,
+            ChannelType.GUILD_VOICE,
+        ],
+    )
     async def stop(self, ctx: CommandContext, channel: Channel = None):
         """讓我停止打字"""
         if not channel:
@@ -85,7 +106,7 @@ class typing(Extension):
             return await ctx.send(":x: baka 我沒有在這個頻道輸入喔！", ephemeral=True)
         self._channels.remove(channel)
         async with aiofiles.open("./storage/typing.txt", "w") as f:
-            await f.write(newline.join(self._channels))
+            await f.write(newline.join([str(i) for i in self._channels]))
         await ctx.send(f"好了！我會停止在 <#{channel}> 輸入了", ephemeral=True)
 
 

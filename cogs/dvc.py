@@ -107,7 +107,7 @@ class dvc(PersistenceExtension):
                     custom_id="dvc_settings_name",
                     label="頻道名稱格式",
                     required=True,
-                    placeholder="請輸入頻道名稱格式\n可用參數: {{MEMBER}} 用戶名稱",
+                    placeholder="請輸入頻道名稱格式\n可用參數: {{MEMBER}} 使用者名稱",
                     value="{{MEMBER}} 的語音頻道",
                 )
             ],
