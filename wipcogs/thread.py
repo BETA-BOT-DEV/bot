@@ -18,6 +18,7 @@ from interactions import (
     Client,
     CommandContext,
     Extension,
+    LibraryException,
     Member,
     Permissions,
     extension_command,
@@ -47,7 +48,10 @@ class thread(Extension):
         if ctx.channel.type not in [ChannelType.PUBLIC_THREAD, ChannelType.PRIVATE_THREAD]:
             return await ctx.send(":x: baka 你只能關閉貼文或者討論串啦！", ephemeral=True)
         await ctx.send("關閉中...")
-        await ctx.channel.modify(archived=True, locked=True)
+        try:
+            await ctx.channel.modify(archived=True, locked=True)
+        except LibraryException:
+            await ctx.send(":x: 對不起！關閉貼文或者討論串時出現錯誤了！", ephemeral=True)
 
     @thread.subcommand()
     @option("要新增的成員")
@@ -72,14 +76,6 @@ class thread(Extension):
             return await ctx.send(":x: baka 這個成員不在討論串裡面啦！", ephemeral=True)
         await ctx.channel.remove_member(user)
         await ctx.send(f"好了！{user.mention} 已經被移出討論串了！")
-
-    # @thread.subcommand()
-    # @option("要設定的名稱", max_length=100)
-    # async def rename(self, ctx: CommandContext, name: str):
-    #     """修改討論串名稱"""
-    #     await ctx.get_channel()
-    #     await ctx.channel.set_name(name=name)
-    #     await ctx.send(f"好了！討論串的名稱已經修改為 #{name}！")
 
 
 def setup(client, **kwargs):
