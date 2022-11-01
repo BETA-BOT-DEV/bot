@@ -175,11 +175,11 @@ class general(Extension):
                         value=f"數量: {ctx.guild.premium_subscription_count if ctx.guild.premium_subscription_count else 0}\n等級: {ctx.guild.premium_tier if ctx.guild.premium_tier else 0}",
                         inline=True,
                     ),
-                    EmbedField(
-                        name="**伺服器表情符號**",
-                        value=f"{len(ctx.guild.emojis)}/{'50'if not ctx.guild.premium_tier or ctx.guild.premium_tier == 0 else '100' if ctx.guild.premium_tier == 1 else '150' if ctx.guild.premium_tier == 2 else '250'}",
-                        inline=True,
-                    ),
+                    # EmbedField(
+                    #     name="**伺服器表情符號**",
+                    #     value=f"{len(ctx.guild.emojis)}/{'50'if not ctx.guild.premium_tier or ctx.guild.premium_tier == 0 else '100' if ctx.guild.premium_tier == 1 else '150' if ctx.guild.premium_tier == 2 else '250'}",
+                    #     inline=True,
+                    # ),
                     EmbedField(
                         name="**創建時間**",
                         value=f"<t:{round(ctx.guild.id.timestamp.timestamp())}:F> (<t:{round(ctx.guild.id.timestamp.timestamp())}:R>)",
