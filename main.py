@@ -26,6 +26,7 @@ import traceback
 from decouple import config
 from interactions import (
     Channel,
+    Client,
     ClientPresence,
     CommandContext,
     Embed,
@@ -36,13 +37,12 @@ from interactions import (
     PresenceActivityType,
     StatusType,
 )
-from interactions.ext.lavalink import VoiceClient
 
 from utils import logger
 
 # create the bot instance
 logger.info("Initializing discord client.")
-client = VoiceClient(
+client = Client(
     token=config("dev"),  # change this to "token" if deploying on production server
     intents=Intents.ALL,
 )
@@ -61,6 +61,9 @@ import sqlite3
 db3 = sqlite3.connect("./storage/storage.db", detect_types=sqlite3.PARSE_DECLTYPES)
 db3.cursor().execute(
     "CREATE TABLE IF NOT EXISTS `feedback_blocked` (`user` BIGINT unsigned NOT NULL, `time` TIMESTAMP NOT NULL, PRIMARY KEY (`user`))"
+)
+db3.cursor().execute(
+    "CREATE TABLE IF NOT EXISTS `metric` (`name` VARCHAR NOT NULL, `uses` BIGINT unsigned NOT NULL, PRIMARY KEY (`name`))"
 )
 db3.cursor().execute(
     "CREATE TABLE IF NOT EXISTS `counting` (`guild` BIGINT unsigned NOT NULL, `channel` BIGINT unsigned NOT NULL, `user` BIGINT unsigned DEFAULT NULL, `count` BIGINT unsigned NOT NULL DEFAULT '0', PRIMARY KEY (`guild`))"
