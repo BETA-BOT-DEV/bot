@@ -18,26 +18,23 @@ tracemalloc.start(25)
 
 version = "development"
 
+# import modules for the bot
+import asyncio
 import os
 import traceback
 
-# import modules for the bot
 from decouple import config
 from interactions import (
     Channel,
     ClientPresence,
     CommandContext,
-    ComponentContext,
     Embed,
     EmbedField,
     HTTPClient,
     Intents,
-    LibraryException,
-    Permissions,
     PresenceActivity,
     PresenceActivityType,
     StatusType,
-    Thread,
 )
 from interactions.ext.lavalink import VoiceClient
 
@@ -117,6 +114,11 @@ async def on_start():
     )
 
 
+@client.event
+async def on_command(ctx: CommandContext):
+    await asyncio.sleep(0.1)
+
+
 def markdown(content):
     for ch in ["*", "_", "~", "`"]:
         content = content.replace(ch, "\\" + ch)
@@ -144,25 +146,6 @@ async def on_command_error(ctx: CommandContext, error: Exception):
             color=randint(0, 0xFFFFFF),
         )
     )
-
-
-@client.event
-async def on_thread_create(thread: Thread):
-    try:
-        await thread.join()
-    except LibraryException:
-        pass
-
-
-@client.component("destroy")
-async def destroy(ctx: ComponentContext):
-    if ctx.author.id == ctx.message.author.id or await ctx.author.has_permissions(
-        Permissions.MANAGE_MESSAGES
-    ):
-        await ctx.message.delete()
-        await ctx.send("已刪除訊息！", ephemeral=True)
-    else:
-        await ctx.send(":x: baka 你沒有權限要求我移除訊息！", ephemeral=True)
 
 
 # shard the bot if needed
