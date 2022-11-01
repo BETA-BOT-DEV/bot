@@ -173,7 +173,7 @@ class hentai(Extension):
                 ephemeral=True,
             )
         await ctx.defer()
-        match randint(0, 3):
+        match randint(0, 2):
             case 0:
                 url = await api_request("https://hmtai.herokuapp.com/v2/nsfwNeko")
                 await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
@@ -181,9 +181,6 @@ class hentai(Extension):
                 url = await api_request("https://nekobot.xyz/api/image?type=hneko")
                 await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
             case 2:
-                url = await api_request("https://neko-love.xyz/api/v1/nekolewd")
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
-            case 3:
                 url = await api_request("https://nekos.moe/api/v1/random/image?nsfw=true&tags=cat")
                 await ctx.send(
                     embeds=raweb(

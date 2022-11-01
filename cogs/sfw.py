@@ -43,7 +43,7 @@ class sfw(Extension):
     async def neko(self, ctx: CommandContext):
         """來看看可愛的貓娘吧！"""
         await ctx.defer()
-        match randint(0, 6):
+        match randint(0, 5):
             case 0:
                 url = await api_request("https://hmtai.herokuapp.com/v2/neko_arts")
                 await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
@@ -54,9 +54,6 @@ class sfw(Extension):
                 url = await api_request("https://nekobot.xyz/api/image?type=neko")
                 await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
             case 3:
-                url = await api_request("https://neko-love.xyz/api/v1/neko")
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
-            case 4:
                 url = await api_request("https://nekos.moe/api/v1/random/image?nsfw=false&tags=cat")
                 await ctx.send(
                     embeds=raweb(
@@ -65,10 +62,10 @@ class sfw(Extension):
                         )
                     )
                 )
-            case 5:
+            case 4:
                 url = await api_request("https://nekos.best/api/v2/neko")
                 await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["results"][0]["url"])))
-            case 6:
+            case 5:
                 url = await api_request("https://api.waifu.pics/sfw/neko")
                 await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
 
@@ -76,16 +73,8 @@ class sfw(Extension):
     async def kitsune(self, ctx: CommandContext):
         """狐狸也是很可愛的喔！"""
         await ctx.defer()
-        match randint(0, 2):
-            case 0:
-                url = await api_request("https://neko-love.xyz/api/v1/kitsune")
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
-            case 1:
-                url = await api_request("https://nekos.life/api/v2/img/fox_girl")
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
-            case 2:
-                url = await api_request("https://neko-love.xyz/api/v1/kitsune")
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
+        url = await api_request("https://nekos.life/api/v2/img/fox_girl")
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
 
     @image.subcommand()
     async def kanna(self, ctx: CommandContext):
