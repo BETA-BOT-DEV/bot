@@ -21,7 +21,9 @@ from interactions import (
     LibraryException,
     Member,
     Permissions,
+    Thread,
     extension_command,
+    extension_listener,
     option,
 )
 from loguru._logger import Logger
@@ -36,6 +38,13 @@ class thread(Extension):
         self.logger.info(
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )
+
+    @extension_listener
+    async def on_thread_create(self, thread: Thread):
+        try:
+            await thread.join()
+        except LibraryException:
+            pass
 
     @extension_command(default_member_permissions=Permissions.MANAGE_THREADS)
     async def thread(self, *args, **kwargs):
