@@ -48,6 +48,7 @@ url_regex = re.compile(
 
 
 class threatType(Enum):
+    THREAT_TYPE_UNSPECIFIED = "未知"
     MALWARE = "惡意程式"
     SOCIAL_ENGINEERING = "社會工程"
     UNWANTED_SOFTWARE = "潛在附加軟件"
@@ -55,12 +56,14 @@ class threatType(Enum):
 
 
 class platformType(Enum):
+    PLATFORM_TYPE_UNSPECIFIED = "未知"
     WINDOWS = "Windows"
     LINUX = "Linux"
     ANDROID = "Android"
     OSX = "MacOS X"
     IOS = "iOS"
-    ALL_PLATFORMS = "所有平台"
+    ANY_PLATFORM = "所有平台"
+    ALL_PLATFORM = "所有平台"
     CHROME = "Chrome"
 
 
@@ -113,7 +116,7 @@ class protect(Extension):
                             fields=[
                                 EmbedField(
                                     name=f"url: ||<{i['threat']['url']}>||",
-                                    value=f"威脅類別: {threatType[i['threatType']]}\n影響平台: {platformType[i['platformType']]}",
+                                    value=f"威脅類別: {threatType[i['threatType']].value}\n受影響範圍: {platformType[i['platformType']].value}",
                                     inline=False,
                                 )
                                 for i in resp["matches"]
