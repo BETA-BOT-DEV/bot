@@ -100,14 +100,14 @@ class counting(PersistenceExtension):
                 return
             if data[0][3] != 0 and data[0][2] and data[0][2] == msg.author.id:
                 await msg.create_reaction("❌")
-                await msg.reply("錯了！你不能連續數兩次！從 **1** 開始吧！")
+                await msg.reply("錯了喔！你不能連續數兩次啦！從 **1** 開始吧！")
                 value = 0
             elif round(value) != data[0][3] + 1:
                 await msg.create_reaction("❌")
                 if data[0][3] == 0:
                     await msg.reply("請從 **1** 開始數數字!")
                 else:
-                    await msg.reply(f"錯了！下個數字是 **{data[0][3] + 1}**！從 **1** 開始吧！")
+                    await msg.reply(f"錯了喔！下個數字是 **{data[0][3] + 1}**啦！從 **1** 開始吧！")
                 value = 0
             else:
                 await msg.create_reaction("✅")
