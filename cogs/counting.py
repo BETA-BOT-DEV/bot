@@ -51,6 +51,8 @@ operators = {
     ast.Pow: op.pow,
     ast.BitXor: op.xor,
     ast.USub: op.neg,
+    ast.Mod: op.mod,
+    ast.FloorDiv: op.floordiv,
 }
 
 
@@ -82,8 +84,9 @@ class counting(PersistenceExtension):
         if not msg.content or (msg.author and msg.author.bot):
             return
         for i in msg.content:
-            if i not in "0123456789+-*/^":
+            if i not in "0123456789+-*/^.÷x%":
                 return
+        msg.content = msg.content.replace("÷", "/").replace("x", "*")
         async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(
                 f"SELECT * FROM counting WHERE channel={msg.channel_id}"
@@ -118,8 +121,9 @@ class counting(PersistenceExtension):
         if not msg.content or (msg.author and msg.author.bot):
             return
         for i in msg.content:
-            if i not in "0123456789+-*/^":
+            if i not in "0123456789+-*/^.÷x%":
                 return
+        msg.content = msg.content.replace("÷", "/").replace("x", "*")
         async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(
                 f"SELECT * FROM counting WHERE channel={msg.channel_id}"
