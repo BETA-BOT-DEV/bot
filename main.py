@@ -23,8 +23,10 @@ import asyncio
 import os
 import traceback
 
+import aiosqlite
 from decouple import config
 from interactions import (
+    ApplicationCommandType,
     Channel,
     Client,
     ClientPresence,
@@ -120,6 +122,14 @@ async def on_start():
 @client.event
 async def on_command(ctx: CommandContext):
     await asyncio.sleep(0.1)
+    if ctx.command.type != ApplicationCommandType.CHAT_INPUT:
+        return
+    async with aiosqlite.connect("./storage/storage.db") as db3:
+        await db3.execute(f'INSERT OR IGNORE INTO metric VALUES ("{ctx.command.name}", 0)')
+        async with db3.execute(f'SELECT * FROM metric WHERE name="{ctx.command.name}"') as cursor:
+            data = [i async for i in cursor]
+        await db3.execute(f'UPDATE metric SET uses={data[0][1]+1} WHERE name="{ctx.command.name}"')
+        await db3.commit()
 
 
 def markdown(content):
@@ -136,7 +146,7 @@ async def on_command_error(ctx: CommandContext, error: Exception):
         tb = f"Traceback: \n```{markdown(traceback.format_exc())}```"
     if len(tb) > 4096:
         tb = tb[:4090] + "...```"
-    msg = error.args[0].replace("\n  ", "\n")
+    msg = error.args[0].replace("\n  ", "\n") or "Unknown error."
     await Channel(
         **await client._http.create_dm(recipient_id=int(client.me.owner.id)), _client=client._http
     ).send(
