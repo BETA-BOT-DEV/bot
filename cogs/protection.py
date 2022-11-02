@@ -267,6 +267,46 @@ class protect(Extension):
             )
         )
 
+    @extension_command(default_member_permissions=Permissions.ADMINISTRATOR)
+    async def safety(self, ctx: CommandContext):
+        """進行伺服器安全性檢查"""
+        await ctx.defer()
+        await ctx.get_guild()
+        everyone = await ctx.guild.get_role(ctx.guild_id)
+        admin = (
+            ":warning: 預設身份組擁有管理員權限 (建議：停用相關權限)"
+            if int(everyone.permissions) & Permissions.ADMINISTRATOR
+            else ":ballot_box_with_check: 預設身份組權限 (管理員)"
+        )
+        mention = (
+            ":warning: 預設身份組擁有提及全部人的權限 (建議：停用相關權限)"
+            if int(everyone.permissions) & Permissions.MENTION_EVERYONE
+            else ":ballot_box_with_check: 預設身份組權限 (提及全部人)"
+        )
+        verify = (
+            ":warning: 伺服器驗證等級為無 (建議：中 或以上)"
+            if ctx.guild.verification_level == 0
+            else "伺服器驗證等級過低 (建議：中 或以上)"
+            if ctx.guild.verification_level == 1
+            else ":ballot_box_with_check: 伺服器驗證等級設定"
+        )
+        mfa = (
+            ":warning: 伺服器未啟用兩步驗證 (建議：啟用兩步驗證)"
+            if ctx.guild.mfa_level == 0
+            else ":ballot_box_with_check: 伺服器兩步驗證設定"
+        )
+        filter = (
+            ":warning: 伺服器未啟用內容過濾 (建議：掃描來自所有使用者的訊息)"
+            if ctx.guild.explicit_content_filter == 0
+            else ":ballot_box_with_check: 伺服器內容過濾器設定"
+        )
+        await ctx.send(
+            embeds=raweb(
+                "伺服器安全性檢查結果",
+                f"好了～檢查完了！讓我們繼續一起保持安全的環境吧！\n\n檢查項目：\n{newline.join([admin, mention, verify, mfa, filter])}",
+            )
+        )
+
 
 def setup(client, **kwargs):
     protect(client, **kwargs)
