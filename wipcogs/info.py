@@ -29,6 +29,7 @@ from interactions import (
     Extension,
     User,
     extension_command,
+    extension_user_command,
     get,
     option,
 )
@@ -233,6 +234,36 @@ class general(Extension):
             color=randint(0, 0xFFFFFF),
         )
         await ctx.send(embeds=embed)
+
+    @extension_user_command(name="使用者查詢")
+    async def _user_info(self, ctx: CommandContext):
+        user = await get(self.client, User, object_id=ctx.target.id)
+        await ctx.send(
+            embeds=Embed(
+                title="使用者查詢結果",
+                description=f"以下是 {user.mention} 的相關資訊喔！",
+                fields=[
+                    EmbedField(
+                        name="**使用者名稱**",
+                        value=f"`{user.username}#{user.discriminator}`",
+                        inline=True,
+                    ),
+                    EmbedField(name="**使用者ID**", value=str(user.id), inline=True),
+                    EmbedField(name="**機器人**", value="是" if user.bot else "否", inline=False),
+                    EmbedField(
+                        name="**創建時間**",
+                        value=f"<t:{round(user.id.timestamp.timestamp())}:F> (<t:{round(user.id.timestamp.timestamp())}:R>)",
+                        inline=True,
+                    ),
+                ],
+                author=EmbedAuthor(
+                    name=f"{user.username}#{user.discriminator}", icon_url=user.avatar_url
+                ),
+                thumbnail=EmbedImageStruct(url=user.avatar_url) if user.avatar else None,
+                image=EmbedImageStruct(url=f"{user.banner_url}?size=480") if user.banner else None,
+                color=randint(0, 0xFFFFFF),
+            )
+        )
 
 
 def setup(client, **kwargs):
