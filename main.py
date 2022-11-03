@@ -40,6 +40,7 @@ from interactions import (
 )
 from interactions.ext.lavalink import VoiceClient
 from interactions.ext.tasks import IntervalTrigger, create_task
+from interactions.ext.wait_for import setup
 
 from utils import logger
 
@@ -49,6 +50,7 @@ client = VoiceClient(
     token=config("dev"),  # change this to "token" if deploying on production server
     intents=Intents.ALL,
 )
+setup(client)
 
 # initialize database
 logger.info("Initializing motor client.")
