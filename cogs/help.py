@@ -56,7 +56,7 @@ nsfw_option = SelectOption(  # nsfw, hentai
     description="可以色色的指令",
     value="nsfw",
 )
-admin_option = SelectOption(  # welcome, farewell, ban, kick, purge, timeout, whosay, steal, dvc, safety, thread
+admin_option = SelectOption(  # welcome, farewell, moderation, whosay, steal, dvc, safety, thread
     label="管理",
     description="管理指令",
     value="admin",
@@ -162,10 +162,7 @@ admin_select = ActionRow(
                 for i in [
                     "welcome",
                     "farewell",
-                    "ban",
-                    "kick",
-                    "purge",
-                    "timeout",
+                    "moderation",
                     "whosay",
                     "steal",
                     "dvc",
@@ -285,13 +282,10 @@ class help(Extension):
             "hentai": ["隨機發送各種Hentai (非現實) 圖片。", "/hentai <圖片類別>", "", True],
             "welcome": ["設定歡迎訊息。", "/welcome", "/welcome", False],
             "farewell": ["設定離開訊息。", "/farewell", "/farewell", False],
-            "ban": ["封鎖使用者。", "/ban <使用者> [原因]", f"/ban @{ctx.author.name}", False],
-            "kick": ["踢出使用者。", "/kick <使用者> [原因]", f"/kick @{ctx.author.name}", False],
-            "purge": ["清除訊息。", "/purge <數量>", "/purge 10"],
-            "timeout": [
-                "暫時禁言使用者。",
-                "/timeout <使用者> <時間> [原因]",
-                f"/timeout @{ctx.author.name} 1",
+            "moderation": [
+                "管理使用者。",
+                "/moderation <行動> <使用者> [原因]",
+                f"/moderation ban @{ctx.author.name}",
                 False,
             ],
             "whosay": [
@@ -303,7 +297,7 @@ class help(Extension):
             "steal": ["偷取其他伺服器的表情符號。", "/steal <表情符號>", "/steal <a:cat:123456789>", False],
             "dvc": ["管理動態語音頻道設定。", "/dvc <子指令>", "/dvc settings", False],
             "thread": ["管理貼文或討論串。", "/thread <子指令>", "/thread archive", False],
-            "safety": ["進行伺服器安全性檢查。", "/safety", "", False],
+            "safety": ["伺服器安全指令。", "/safety <子指令>", "/safety check", False],
             "temp": ["幫你轉換溫度單位。", "/temp <數值> <原始單位> <目標單位>", "/temp 10 c f", False],
         }
         cmd = cmds[selected[0]]
