@@ -192,39 +192,17 @@ class fun(PersistenceExtension):
                 raise ValueError("Invalid value")
 
     def win(self, board, player):
-        win = False
-        for i in range(3):
-            win = True
-            for j in range(3):
-                if board[i][j] != player:
-                    win = False
-                    break
-            if win:
-                return True
-
-        for i in range(3):
-            win = True
-            for j in range(3):
-                if board[j][i] != player:
-                    win = False
-                    break
-            if win:
-                return True
-
-        win = True
-        for i in range(3):
-            if board[i][i] != player:
-                win = False
-                break
-        if win:
-            return True
-
-        win = True
-        for i in range(3):
-            if board[i][2 - i] != player:
-                win = False
-                break
-        if win:
+        wincond = [
+            [board[0][0], board[0][1], board[0][2]],
+            [board[1][0], board[1][1], board[1][2]],
+            [board[2][0], board[2][1], board[2][2]],
+            [board[0][0], board[1][0], board[2][0]],
+            [board[0][1], board[1][1], board[2][1]],
+            [board[0][2], board[1][2], board[2][2]],
+            [board[0][0], board[1][1], board[2][2]],
+            [board[2][0], board[1][1], board[0][2]],
+        ]
+        if [player][player][player] in wincond:
             return True
         return False
 
@@ -232,10 +210,8 @@ class fun(PersistenceExtension):
         p1win = False
         p2win = False
         tie = False
-        if not current:
-            build = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-        else:
-            build = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        build = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        if current:
             available = []
             for i in range(3):
                 for j in range(3):
@@ -312,7 +288,7 @@ class fun(PersistenceExtension):
         if p1win:
             await ctx.edit("你贏了！", components=board)
         elif p2win:
-            await ctx.edit("你輸了！不用灰心，再來一遍就好了！", components=board)
+            await ctx.edit("你輸了！不用灰心喔，再來一遍就好了！", components=board)
         elif tie:
             await ctx.edit("是平手！", components=board)
         else:
@@ -321,7 +297,7 @@ class fun(PersistenceExtension):
     @extension_command()
     @option("數值")
     @option(
-        "單位",
+        "原始單位",
         name="from",
         choices=[
             Choice(name="攝氏", value="c"),
@@ -330,7 +306,7 @@ class fun(PersistenceExtension):
         ],
     )
     @option(
-        "單位",
+        "目標單位",
         choices=[
             Choice(name="攝氏", value="c"),
             Choice(name="華氏", value="f"),
