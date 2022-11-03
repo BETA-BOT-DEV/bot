@@ -107,7 +107,7 @@ class counting(PersistenceExtension):
                 if data[0][3] == 0:
                     await msg.reply("請從 **1** 開始數數字!")
                 else:
-                    await msg.reply(f"錯了喔！下個數字是 **{data[0][3] + 1}**啦！從 **1** 開始吧！")
+                    await msg.reply(f"錯了喔！下個數字是 **{data[0][3] + 1}** 啦！從 **1** 開始吧！")
                 value = 0
             else:
                 await msg.create_reaction("✅")
