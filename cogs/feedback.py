@@ -312,8 +312,9 @@ class feedback(PersistenceExtension):
 
     @extension_component("feedback_pin")
     async def _feedback_pin(self, ctx: ComponentContext):
+        await ctx.defer(ephemeral=True)
         if ctx.user.id != self.client.me.owner.id:
-            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。", ephemeral=True)
+            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。")
         if not ctx.message.pinned:
             await ctx.message.pin()
         components = ctx.message.components
@@ -322,12 +323,13 @@ class feedback(PersistenceExtension):
         embed = ctx.message.embeds[0]
         embed.color = 0xFFFF00
         await ctx.message.edit(embeds=embed, components=components)
-        await ctx.send("已釘選訊息！", ephemeral=True)
+        await ctx.send("已釘選訊息！")
 
     @extension_component("feedback_unpin")
     async def _feedback_unpin(self, ctx: ComponentContext):
+        await ctx.defer(ephemeral=True)
         if ctx.user.id != self.client.me.owner.id:
-            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。", ephemeral=True)
+            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。")
         if ctx.message.pinned:
             await ctx.message.unpin()
         components = ctx.message.components
@@ -342,36 +344,39 @@ class feedback(PersistenceExtension):
             else 0xFDFFB6
         )
         await ctx.message.edit(components=components)
-        await ctx.send("已取消釘選訊息！", ephemeral=True)
+        await ctx.send("已取消釘選訊息！")
 
     @extension_component("feedback_handled")
     async def _feedback_handled(self, ctx: ComponentContext):
+        await ctx.defer(ephemeral=True)
         if ctx.user.id != self.client.me.owner.id:
-            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。", ephemeral=True)
+            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。")
         if ctx.message.pinned:
             await ctx.message.unpin()
         embed = ctx.message.embeds[0]
         embed.description = "已處理的使用者回饋"
         embed.color = 0xBDB2FF
         await ctx.message.edit(embeds=embed, components=[])
-        await ctx.send("已處理訊息！", ephemeral=True)
+        await ctx.send("已處理訊息！")
 
     @extension_component("feedback_ignore")
     async def _feedback_ignore(self, ctx: ComponentContext):
+        await ctx.defer(ephemeral=True)
         if ctx.user.id != self.client.me.owner.id:
-            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。", ephemeral=True)
+            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。")
         if ctx.message.pinned:
             await ctx.message.unpin()
         embed = ctx.message.embeds[0]
         embed.description = "已略過的使用者回饋"
         embed.color = 0x000000
         await ctx.message.edit(embeds=embed, components=[])
-        await ctx.send("已略過訊息！", ephemeral=True)
+        await ctx.send("已略過訊息！")
 
     @extension_persistent_component("feedback_block")
     async def _feedback_block(self, ctx: ComponentContext, package):
+        await ctx.defer(ephemeral=True)
         if ctx.user.id != self.client.me.owner.id:
-            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。", ephemeral=True)
+            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。")
         await ctx.send(
             "你確定要封鎖這個使用者嗎？",
             components=[
@@ -396,7 +401,6 @@ class feedback(PersistenceExtension):
                     ]
                 )
             ],
-            ephemeral=True,
         )
 
     @extension_component("feedback_block_cancel")
@@ -513,7 +517,8 @@ class feedback(PersistenceExtension):
     async def on_message_create(self, message: Message):
         if (
             message.type == MessageType.CHANNEL_PINNED_MESSAGE
-            and message.channel_id == 1032089392333992047
+            and message.channel_id
+            == 1032089392333992047  # dev 1036566585529335859 | prod 1032089392333992047
             and message.author.id == self.client.me.id
         ):
             await message.delete()
