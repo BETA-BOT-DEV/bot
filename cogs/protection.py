@@ -268,7 +268,11 @@ class protect(Extension):
         )
 
     @extension_command(default_member_permissions=Permissions.ADMINISTRATOR)
-    async def safety(self, ctx: CommandContext):
+    async def safety(self, *args, **kwargs):
+        ...
+
+    @safety.subcommand()
+    async def check(self, ctx: CommandContext):
         """進行伺服器安全性檢查"""
         await ctx.defer()
         await ctx.get_guild()
