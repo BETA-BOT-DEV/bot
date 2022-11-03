@@ -489,7 +489,7 @@ class welcomer(PersistenceExtension):
                             type=ComponentType.ROLE_SELECT,
                             custom_id=str(
                                 PersistentCustomID(
-                                    self.client, "welcome_settins_role", int(ctx.message.id)
+                                    self.client, "welcome_settings_role", int(ctx.message.id)
                                 )
                             ),
                             placeholder="選擇身份組",
@@ -501,7 +501,7 @@ class welcomer(PersistenceExtension):
                 )
 
     @extension_persistent_component("welcome_settings_channel")
-    async def _welcome_settings_channel(self, ctx: ComponentContext, package):
+    async def _welcome_settings_channel(self, ctx: ComponentContext, package, selected=None):
         await ctx.defer(edit_origin=True)
         msg = await get(self.client, Message, object_id=package, parent_id=ctx.channel_id)
         msg.embeds[0].fields[0].value = f"<#{ctx.data.values[0]}>"
@@ -539,8 +539,8 @@ class welcomer(PersistenceExtension):
         await msg.edit(embeds=msg.embeds, components=msg.components)
         await ctx.send("我會把設定記住的！", ephemeral=True)
 
-    @extension_persistent_component("welcome_settins_role")
-    async def _welcome_settings_role(self, ctx: ComponentContext, package):
+    @extension_persistent_component("welcome_settings_role")
+    async def _welcome_settings_role(self, ctx: ComponentContext, package, selected=None):
         await ctx.defer(edit_origin=True)
         msg = await get(self.client, Message, object_id=package, parent_id=ctx.channel_id)
         if len(ctx.data.values) == 0:
@@ -857,7 +857,7 @@ class welcomer(PersistenceExtension):
                 await ctx.popup(modal)
 
     @extension_persistent_component("farewell_settings_channel")
-    async def _farewell_settings_channel(self, ctx: ComponentContext, package):
+    async def _farewell_settings_channel(self, ctx: ComponentContext, package, selected=None):
         await ctx.defer(edit_origin=True)
         msg = await get(self.client, Message, object_id=package, parent_id=ctx.channel_id)
         msg.embeds[0].fields[0].value = f"<#{ctx.data.values[0]}>"
