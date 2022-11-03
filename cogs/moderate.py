@@ -23,6 +23,7 @@ from interactions import (
     Member,
     Permissions,
     extension_command,
+    extension_user_command,
     option,
 )
 from loguru._logger import Logger
@@ -39,7 +40,11 @@ class moderate(Extension):
         )
 
     # TODO: consider adding user interactions + rework content
-    @extension_command(dm_permission=False, default_member_permissions=Permissions.MANAGE_MESSAGES)
+    @extension_command(default_member_permissions=Permissions.ADMINISTRATOR, dm_permission=False)
+    async def moderation(self, *args, **kwargs):
+        ...
+
+    @moderation.subcommand()
     @option("要刪除的訊息數量", min_value=1)
     async def purge(self, ctx: CommandContext, limit: int):
         """清除訊息"""
@@ -52,7 +57,7 @@ class moderate(Extension):
         else:
             await ctx.send(f"我清除了 {len(deleted)} 條訊息！不過14天之前的訊息我動不了。", ephemeral=True)
 
-    @extension_command(dm_permission=False, default_member_permissions=Permissions.KICK_MEMBERS)
+    @moderation.subcommand()
     @option("要踢的人")
     @option("原因")
     async def kick(self, ctx: CommandContext, member: Member, reason: str = None):
@@ -69,7 +74,24 @@ class moderate(Extension):
                 f"我把 {member.user.username}#{member.user.discriminator} 踢出去了！再見！", ephemeral=True
             )
 
-    @extension_command(dm_permission=False, default_member_permissions=Permissions.BAN_MEMBERS)
+    @extension_user_command(
+        name="踢出成員", dm_permission=False, default_member_permissions=Permissions.KICK_MEMBERS
+    )
+    async def _user_kick(self, ctx: CommandContext):
+        await ctx.defer(ephemeral=True)
+        if not ctx.app_permissions.KICK_MEMBERS:
+            return await ctx.send(":x: 我沒權限踢人 ;-;", ephemeral=True)
+        try:
+            await ctx.target.kick(ctx.guild_id)
+        except LibraryException:
+            return await ctx.send(f":x: 我踢不動 {ctx.target.mention} ;-;", ephemeral=True)
+        else:
+            await ctx.send(
+                f"我把 {ctx.target.user.username}#{ctx.target.user.discriminator} 踢出去了！再見！",
+                ephemeral=True,
+            )
+
+    @moderation.subcommand()
     @option("要封鎖的人")
     @option("原因")
     async def ban(self, ctx: CommandContext, member: Member, reason: str = None):
@@ -86,7 +108,7 @@ class moderate(Extension):
                 f"我把 {member.user.username}#{member.user.discriminator} 封鎖了！再見！", ephemeral=True
             )
 
-    @extension_command(dm_permission=False, default_member_permissions=Permissions.MODERATE_MEMBERS)
+    @moderation.subcommand()
     @option("要禁言的人")
     @option(
         "禁言時間",
