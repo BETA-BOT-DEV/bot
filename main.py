@@ -28,7 +28,6 @@ from decouple import config
 from interactions import (
     ApplicationCommandType,
     Channel,
-    Client,
     ClientPresence,
     CommandContext,
     Embed,
@@ -39,12 +38,14 @@ from interactions import (
     PresenceActivityType,
     StatusType,
 )
+from interactions.ext.lavalink import VoiceClient
+from interactions.ext.tasks import IntervalTrigger, create_task
 
 from utils import logger
 
 # create the bot instance
 logger.info("Initializing discord client.")
-client = Client(
+client = VoiceClient(
     token=config("dev"),  # change this to "token" if deploying on production server
     intents=Intents.ALL,
 )
@@ -101,6 +102,27 @@ for i in os.listdir("./wipcogs"):
         client.load(f"wipcogs.{i[:-3]}", logger=logger, version=version, db=db, tw=tw)
 
 
+current = 0
+
+
+@create_task(IntervalTrigger(15))
+async def _loop_presence():
+    global current
+    match current:
+        case 0:
+            name = "beta-bot.itsrqtl.me"
+        case _:
+            name = "/help"
+            current = -1
+    await client.change_presence(
+        presence=ClientPresence(
+            activities=[PresenceActivity(type=PresenceActivityType.GAME, name=name)],
+            status=StatusType.ONLINE,
+        )
+    )
+    current += 1
+
+
 @client.event
 async def on_start():
     if isinstance(client._http, str):
@@ -113,10 +135,12 @@ async def on_start():
 
     await client.change_presence(
         presence=ClientPresence(
-            activities=[PresenceActivity(type=PresenceActivityType.GAME, name="MEE6 is bad")],
+            activities=[PresenceActivity(type=PresenceActivityType.GAME, name="準備中...")],
             status=StatusType.ONLINE,
         )
     )
+
+    _loop_presence.start()
 
 
 @client.event

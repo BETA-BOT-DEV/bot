@@ -25,8 +25,6 @@ from interactions import (
     Attachment,
     Button,
     ButtonStyle,
-    Channel,
-    ChannelType,
     Choice,
     Client,
     CommandContext,
@@ -59,35 +57,6 @@ from loguru._logger import Logger
 from utils import api_request, lengthen_url, raweb, requset_raw_img, translate
 
 newline = "\n"
-
-# https://gist.github.com/GeneralSadaf/42d91a2b6a93a7db7a39208f2d8b53ad
-free_activity = {
-    "Watch Together": 880218394199220334,
-    "Betrayal.io": 773336526917861400,
-    "Fishington.io": 814288819477020702,
-    "Sketch Heads": 902271654783242291,
-    "Word Snacks": 879863976006127627,
-}
-
-activities = {
-    "Watch Together": 880218394199220334,
-    "Betrayal.io": 773336526917861400,
-    "Fishington.io": 814288819477020702,
-    "Sketch Heads": 902271654783242291,
-    "Word Snacks": 879863976006127627,
-    "Poker Night": 755827207812677713,
-    "Chess in the Park": 832012774040141894,
-    "Letter League": 879863686565621790,
-    "SpellCast": 852509694341283871,
-    "Checkers In The Park": 832013003968348200,
-    "Blazing 8s": 832025144389533716,
-    "Putt Party": 945737671223947305,
-    "Land-io": 903769130790969345,
-    "Booble League": 947957217959759964,
-    "Ask Away": 976052223358406656,
-    "Know What I Meme": 950505761862189096,
-    "Bash Out": 1006584476094177371,
-}
 
 target_lang = {
     "Bulgarian": "BG",
@@ -175,6 +144,12 @@ original_lang = {
     "Turkish": "TR",
     "Ukrainian": "UK",
     "Chinese": "ZH",
+}
+
+temp = {
+    "c": "°C",
+    "f": "°F",
+    "k": "K",
 }
 
 
@@ -324,10 +299,9 @@ class fun(PersistenceExtension):
 
     @extension_command()
     async def tictactoe(self, ctx: CommandContext):
-        """和我來玩一場井字遊戲！"""
+        """和我來玩一場圈圈叉叉遊戲！"""
         await ctx.defer()
-        board, p1win, p2win, tie = self.build_board()
-        await ctx.send("遊戲開始了！你先放吧！", components=board)
+        await ctx.send("遊戲開始了！你先放吧！", components=self.build_board()[0])
 
     @extension_persistent_component("ttt-button")
     async def ttt_button(self, ctx: ComponentContext, package):
@@ -343,6 +317,49 @@ class fun(PersistenceExtension):
             await ctx.edit("是平手！", components=board)
         else:
             await ctx.edit("到你了喔！", components=board)
+
+    @extension_command()
+    @option("數值")
+    @option(
+        "單位",
+        name="from",
+        choices=[
+            Choice(name="攝氏", value="c"),
+            Choice(name="華氏", value="f"),
+            Choice(name="克耳文", value="k"),
+        ],
+    )
+    @option(
+        "單位",
+        choices=[
+            Choice(name="攝氏", value="c"),
+            Choice(name="華氏", value="f"),
+            Choice(name="克耳文", value="k"),
+        ],
+    )
+    async def temp(self, ctx: CommandContext, value: float, _from: str, to: str):
+        """幫你轉換溫度單位"""
+        if _from == to:
+            return await ctx.send("baka 你輸入了相同的單位啦！")
+        if _from not in ["c", "f", "k"] or to not in ["c", "f", "k"]:
+            return await ctx.send("baka 你輸入的單位無效啦！")
+        match _from:
+            case "c":
+                if to == "f":
+                    result = value * 9 / 5 + 32
+                elif to == "k":
+                    result = value + 273.15
+            case "f":
+                if to == "c":
+                    result = (value - 32) * 5 / 9
+                elif to == "k":
+                    result = (value + 459.67) * 5 / 9
+            case "k":
+                if to == "c":
+                    result = value - 273.15
+                elif to == "f":
+                    result = value * 9 / 5 - 459.67
+        await ctx.send(f"**{round(value, 2)}**{temp[_from]} 等於 **{round(result, 2)}**{temp[to]} 喔！")
 
     @extension_command(
         dm_permission=False, default_member_permissions=Permissions.MANAGE_EMOJIS_AND_STICKERS
@@ -631,42 +648,6 @@ class fun(PersistenceExtension):
         await ctx.send(
             f"Google搜尋教學: [連結](https://support.google.com/websearch/answer/134479?hl={language})"
         )
-
-    @extension_command(dm_permission=False)
-    @option("要開始活動的頻道", channel_types=[ChannelType.GUILD_VOICE])
-    @option("要開始的活動", autocomplete=True)
-    async def together(self, ctx: CommandContext, channel: Channel, activity: str):
-        if activity not in activities:
-            return await ctx.send(":x: baka 這個活動不存在！", ephemeral=True)
-        await ctx.get_guild()
-        if not (
-            await channel.get_permissions_for(ctx.guild.get_member(self.client.me.id))
-        ).CREATE_INSTANT_INVITE:
-            return await ctx.send(":x: 我沒有權限在這個頻道開始活動 ;-;", ephemeral=True)
-        await ctx.send(
-            embeds=raweb(
-                desc="我已經忘掉這個技能了！\n(這個功能已停用: [Discord 已正式發布此功能](<https://discord.com/blog/server-activities-games-voice-watch-together>))"
-            )
-        )
-
-    @extension_autocomplete(command="together", name="activity")
-    async def _together(self, ctx: CommandContext, activity: str = ""):
-        a = (
-            list(free_activity.keys())
-            if not ctx.guild or ctx.guild.premium_tier == 0
-            else list(activities.keys())
-        )
-        if not (letters := list(activity) if activity != "" else []):
-            await ctx.populate([Choice(name=i, value=i) for i in (a[:24] if len(a) > 25 else a)])
-        else:
-            choices: list = []
-            focus: str = "".join(letters)
-            for i in a:
-                if focus.lower() in i.lower() and len(choices) < 26:
-                    choices.append(Choice(name=i, value=i))
-                elif len(choices) >= 26:
-                    break
-            await ctx.populate(choices)
 
     @extension_autocomplete(command="translate", name="target")
     async def _target(self, ctx: CommandContext, target: str = ""):

@@ -56,27 +56,24 @@ nsfw_option = SelectOption(  # nsfw, hentai
     description="可以色色的指令",
     value="nsfw",
 )
-admin_option = SelectOption(  # welcome, farewell, ban, kick, purge, timeout, whosay, steal, dvc
+admin_option = SelectOption(  # welcome, farewell, ban, kick, purge, timeout, whosay, steal, dvc, safety, thread
     label="管理",
     description="管理指令",
     value="admin",
 )
 
 
-def _select(nsfw: bool = False):
-    return ActionRow(
-        components=[
-            SelectMenu(
-                custom_id="help_select",
-                placeholder="選擇一個類別",
-                options=[general_option, image_option, fun_option, nsfw_option, admin_option]
-                if nsfw
-                else [general_option, image_option, fun_option, admin_option],
-                min_values=1,
-                max_values=1,
-            )
-        ]
-    )
+_select = ActionRow(
+    components=[
+        SelectMenu(
+            custom_id="help_select",
+            placeholder="選擇一個類別",
+            options=[general_option, image_option, fun_option, nsfw_option, admin_option],
+            min_values=1,
+            max_values=1,
+        )
+    ]
+)
 
 
 general_select = ActionRow(
@@ -129,6 +126,7 @@ fun_select = ActionRow(
                     "whatanime",
                     "twitter",
                     "typing",
+                    "temp",
                 ]
             ],
             min_values=1,
@@ -171,6 +169,8 @@ admin_select = ActionRow(
                     "whosay",
                     "steal",
                     "dvc",
+                    "safety",
+                    "thread",
                 ]
             ],
             min_values=1,
@@ -216,16 +216,14 @@ class help(Extension):
         await ctx.get_channel()
         await ctx.send(
             embeds=maineb,
-            components=[_select(ctx.channel.nsfw), ActionRow(components=[invite])],
+            components=[_select, ActionRow(components=[invite])],
             ephemeral=True,
         )
 
     @extension_component("help_goback")
     async def _help_goback(self, ctx: ComponentContext):
         await ctx.defer(edit_origin=True)
-        await ctx.edit(
-            embeds=maineb, components=[_select(ctx.channel.nsfw), ActionRow(components=[invite])]
-        )
+        await ctx.edit(embeds=maineb, components=[_select, ActionRow(components=[invite])])
 
     @extension_component("help_select")
     async def _help_select(self, ctx: ComponentContext, selected=None):
@@ -304,6 +302,9 @@ class help(Extension):
             ],
             "steal": ["偷取其他伺服器的表情符號。", "/steal <表情符號>", "/steal <a:cat:123456789>", False],
             "dvc": ["管理動態語音頻道設定。", "/dvc <子指令>", "/dvc settings", False],
+            "thread": ["管理貼文或討論串。", "/thread <子指令>", "/thread archive", False],
+            "safety": ["進行伺服器安全性檢查。", "/safety", "", False],
+            "temp": ["幫你轉換溫度單位。", "/temp <數值> <原始單位> <目標單位>", "/temp 10 c f", False],
         }
         cmd = cmds[selected[0]]
         eb = _command(selected[0], cmd[0], cmd[1], cmd[2], cmd[3])

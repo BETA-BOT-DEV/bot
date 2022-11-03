@@ -55,7 +55,7 @@ class dvc(PersistenceExtension):
     async def on_voice_state_update(self, before: VoiceState, after: VoiceState):
         if after.joined:
             document = await self._dvc.find_one({"_id": int(after.guild_id)})
-            if document and str(after.channel_id) == document["lobby"]:
+            if document and int(after.channel_id) == document["lobby"]:
                 g = await get(self.client, Guild, object_id=after.guild_id)
                 name = document["format"].replace("{{MEMBER}}", after.member.name)
                 c = await g.create_channel(
@@ -74,13 +74,13 @@ class dvc(PersistenceExtension):
             if not voice_states or len(voice_states) == 0:
                 document = await self._dvc.find_one({"_id": int(before.guild_id)})
                 if document and before.channel_id:
-                    if "keep" in document and str(before.channel_id) in document["keep"]:
+                    if "keep" in document and int(before.channel_id) in document["keep"]:
                         return
                     channel = await before.get_channel()
                     if (
                         channel.parent_id
-                        and str(channel.parent_id) == document["category"]
-                        and not str(channel.id) == document["lobby"]
+                        and int(channel.parent_id) == document["category"]
+                        and not int(channel.id) == document["lobby"]
                     ):
                         await channel.delete()
 
