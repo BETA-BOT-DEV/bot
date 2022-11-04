@@ -61,9 +61,9 @@ def parse_embed(embed: Embed, default="", mode="welcome"):
     embed_color = embed.fields[5].value if embed.fields[5].value != "*沒有設定*" else default
     if mode == "welcome":
         role = embed.fields[6].value if embed.fields[6].value != "*沒有設定*" else default
-        return (channel, content, embed_title, embed_description, embed_footer, embed_color, role)
+        return (channel, content, embed_title, embed_description, embed_color, embed_footer, role)
     elif mode == "farewell":
-        return (channel, content, embed_title, embed_description, embed_footer, embed_color)
+        return (channel, content, embed_title, embed_description, embed_color, embed_footer)
 
 
 class welcomer(PersistenceExtension):
@@ -303,8 +303,8 @@ class welcomer(PersistenceExtension):
                 "message": settings[1],
                 "embed_title": settings[2],
                 "embed_description": settings[3],
-                "embed_color": settings[4],
-                "embed_footer": settings[5],
+                "embed_footer": settings[4],
+                "embed_color": settings[5],
                 "role": settings[6][3:-1] if settings[6] else None,
             },
             upsert=True,
@@ -679,8 +679,8 @@ class welcomer(PersistenceExtension):
                 "message": settings[1],
                 "embed_title": settings[2],
                 "embed_description": settings[3],
-                "embed_color": settings[4],
-                "embed_footer": settings[5],
+                "embed_footer": settings[4],
+                "embed_color": settings[5],
             },
             upsert=True,
         )
