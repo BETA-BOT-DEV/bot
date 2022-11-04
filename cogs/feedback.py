@@ -88,7 +88,6 @@ class feedback(PersistenceExtension):
     def __init__(self, client, **kwargs):
         self.client: Client = client
         self.logger: Logger = kwargs.get("logger")
-        self.db = kwargs.get("db")
         self.logger.info(
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )

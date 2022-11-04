@@ -98,10 +98,12 @@ client.load("interactions.ext.persistence", cipher_key=config("cipher"))
 logger.info("Loading client extensions.")
 for i in os.listdir("./cogs"):
     if i.endswith(".py"):
-        client.load(f"cogs.{i[:-3]}", logger=logger, version=version, db=db, tw=tw)
+        client.load(f"cogs.{i[:-3]}", logger=logger, version=version, db=db, tw=tw, cluster=cluster)
 for i in os.listdir("./wipcogs"):
     if i.endswith(".py"):
-        client.load(f"wipcogs.{i[:-3]}", logger=logger, version=version, db=db, tw=tw)
+        client.load(
+            f"wipcogs.{i[:-3]}", logger=logger, version=version, db=db, tw=tw, cluster=cluster
+        )
 
 
 current = 0

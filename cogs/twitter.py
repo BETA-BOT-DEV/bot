@@ -13,6 +13,7 @@
 
 import os
 import re
+from random import randint
 
 import tweepy.asynchronous.client
 from interactions import (
@@ -27,6 +28,9 @@ from interactions import (
 )
 from loguru._logger import Logger
 
+TWITTER_URL_REGEX = re.compile(
+    r"https:\/\/(www\.)?(twitter|fxtwitter)\.com\/[A-Za-z0-9_][^ =&/:]{1,15}\/status\/[0-9]{19}"
+)
 newline = "\n"
 
 
@@ -36,10 +40,19 @@ def markdown(content):
     return content
 
 
+def get_post_id(content):
+    matchs = TWITTER_URL_REGEX.search(content)
+    if matchs:
+        return matchs.group().split("/")[-1]
+    return None
+
+
 class twitter(Extension):
     def __init__(self, client, **kwargs):
         self.client: Client = client
         self.logger: Logger = kwargs.get("logger")
+        self.cluster = kwargs.get("cluster")
+        self.db = self.cluster.twitter
         self.tw: tweepy.asynchronous.client.AsyncClient = kwargs.get("tw")
         self.logger.info(
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
@@ -48,6 +61,57 @@ class twitter(Extension):
     @extension_command()
     async def twitter(self, *args, **kwargs):
         ...
+
+    @twitter.subcommand()
+    async def link(self, ctx: CommandContext):
+        """連結Twitter"""
+        twitter = await self.db.connected.find_one(filter={"_id": int(ctx.author.id)})
+        pending = await self.db.pending.find_one(filter={"_id": int(ctx.author.id)})
+        if not twitter and not pending:
+            code = None
+            codes = [i["code"] async for i in self.db.pending.find()]
+            while not code or code in codes:
+                code = "%08d" % randint(0, 99999999)
+            await self.db.pending.insert_one({"_id": int(ctx.author.id), "code": str(code)})
+            await ctx.send(
+                f"請點擊[此連結](<https://service.itsrqtl.repl.co/link?code={code}>)進行連結\n輸入密碼時，請確保網域為twitter.com喔！",
+                ephemeral=True,
+            )
+        elif not twitter and pending:
+            await ctx.send(
+                f"請點擊[此連結](<https://service.itsrqtl.repl.co/link?code={pending['code']}>)進行連結\n輸入密碼時，請確保網域為twitter.com喔！",
+                ephemeral=True,
+            )
+        elif twitter:
+            resp = (
+                await self.tw.get_user(id=twitter["tid"], user_fields=["username"])
+            ).data.username
+            await ctx.send(
+                f":x: baka 你已連結到 [@{resp}](<https://twitter.com/{resp}>) 啦！\n請先用 </twitter disconnect:{self.client._find_command('twitter').id}> 解除連結喔！",
+                ephemeral=True,
+            )
+
+    @twitter.subcommand()
+    async def unlink(self, ctx: CommandContext):
+        """解除Twitter連結"""
+        twitter = await self.db.connected.find_one(filter={"_id": str(ctx.author.id)})
+        if not twitter:
+            await ctx.send(
+                f":x: baka 你沒有連結Twitter啦！\n請先用 </twitter connect:{self.client._find_command('twitter').id}> 連結Twitter喔！",
+                ephemeral=True,
+            )
+        else:
+            resp = (
+                await self.tw.get_user(id=twitter["tid"], user_fields=["username"])
+            ).data.username
+            await self.db.connected.delete_one(filter={"_id": int(ctx.author.id)})
+            await ctx.send(
+                f"成功解除與Twitter [@{resp}](<https://twitter.com/{resp}>) 的連結了！",
+                ephemeral=True,
+            )
+            self.logger.info(
+                f"User {ctx.author.user.username}#{ctx.author.user.discriminator} ({ctx.author.id}) unlinked their twitter: @{resp} ({twitter['tid']})"
+            )
 
     @twitter.subcommand()
     @option(description="使用者名稱")
