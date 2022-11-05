@@ -106,10 +106,10 @@ class twitter(PersistenceExtension):
                         async with session.post(
                             "https://api.twitter.com/2/oauth2/token",
                             headers={
-                                "Authorization": f"""Basic {b64encode(f"{config['twid']}:{config['twsecret']}".encode()).decode()}""",
+                                "Authorization": f"""Basic {b64encode(f"{config('twid')}:{config('twsecret')}".encode()).decode()}""",
                                 "Content-Type": "application/x-www-form-urlencoded",
                             },
-                            data=f"refresh_token={document['refresh']}&grant_type=refresh_token&client_id={config['twid']}",
+                            data=f"refresh_token={document['refresh']}&grant_type=refresh_token&client_id={config('twid')}",
                         ) as r:
                             resp = await r.json()
                         if "access_token" not in resp or "refresh_token" not in resp:
@@ -173,10 +173,10 @@ class twitter(PersistenceExtension):
                         async with session.post(
                             "https://api.twitter.com/2/oauth2/token",
                             headers={
-                                "Authorization": f"""Basic {b64encode(f"{config['twid']}:{config['twsecret']}".encode()).decode()}""",
+                                "Authorization": f"""Basic {b64encode(f"{config('twid')}:{config('twsecret')}".encode()).decode()}""",
                                 "Content-Type": "application/x-www-form-urlencoded",
                             },
-                            data=f"refresh_token={document['refresh']}&grant_type=refresh_token&client_id={config['twid']}",
+                            data=f"refresh_token={document['refresh']}&grant_type=refresh_token&client_id={config('twid')}",
                         ) as r:
                             resp = await r.json()
                         if "access_token" not in resp or "refresh_token" not in resp:
@@ -372,10 +372,10 @@ class twitter(PersistenceExtension):
                 async with session.post(
                     "https://api.twitter.com/2/oauth2/token",
                     headers={
-                        "Authorization": f"""Basic {b64encode(f"{config['twid']}:{config['twsecret']}".encode()).decode()}""",
+                        "Authorization": f"""Basic {b64encode(f"{config('twid')}:{config('twsecret')}".encode()).decode()}""",
                         "Content-Type": "application/x-www-form-urlencoded",
                     },
-                    data=f"refresh_token={document['refresh']}&grant_type=refresh_token&client_id={config['twid']}",
+                    data=f"refresh_token={document['refresh']}&grant_type=refresh_token&client_id={config('twid')}",
                 ) as r:
                     resp = await r.json()
                 if "access_token" not in resp or "refresh_token" not in resp:
