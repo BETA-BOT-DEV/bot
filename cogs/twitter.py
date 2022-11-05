@@ -11,20 +11,37 @@
 #                   |___||__| /____  >|____|_  /\__   | |__| |____/
 #                                  \/        \/    |__|
 
+import asyncio
+import datetime
 import os
 import re
+from base64 import b64encode
 from random import randint
 
+import aiohttp
 import tweepy.asynchronous.client
+from decouple import config
 from interactions import (
+    ActionRow,
+    Button,
+    ButtonStyle,
     Client,
     CommandContext,
+    ComponentContext,
     Embed,
     EmbedField,
     EmbedImageStruct,
-    Extension,
+    Message,
+    MessageReaction,
     extension_command,
+    extension_listener,
+    get,
     option,
+)
+from interactions.ext.persistence import (
+    PersistenceExtension,
+    PersistentCustomID,
+    extension_persistent_component,
 )
 from loguru._logger import Logger
 
@@ -47,7 +64,7 @@ def get_post_id(content):
     return None
 
 
-class twitter(Extension):
+class twitter(PersistenceExtension):
     def __init__(self, client, **kwargs):
         self.client: Client = client
         self.logger: Logger = kwargs.get("logger")
@@ -58,6 +75,139 @@ class twitter(Extension):
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )
 
+    @extension_listener(name="on_message_create")
+    async def _twitter_reactions(self, msg: Message):
+        if msg.content and TWITTER_URL_REGEX.search(msg.content):
+            for emoji in ["🔁", "❤️"]:
+                try:
+                    await msg.create_reaction(emoji)
+                finally:
+                    await asyncio.sleep(0.3)
+
+    @extension_listener(name="on_message_reaction_add")
+    async def _reaction_add(self, reaction: MessageReaction):
+        if reaction.emoji.name not in ["🔁", "❤️"] or reaction.user_id == self.client.me.id:
+            return
+        msg: Message = await get(
+            self.client, Message, object_id=reaction.message_id, parent_id=reaction.channel_id
+        )
+        if msg.content:
+            id = get_post_id(msg.content)
+            if id:
+                document = await self.db.connected.find_one(filter={"_id": int(reaction.user_id)})
+                if not document:
+                    return await msg.remove_reaction_from(reaction.emoji, reaction.user_id)
+                token = document["token"]
+                async with aiohttp.ClientSession() as session:
+                    if (
+                        document["ttl"] + datetime.timedelta(hours=1, minutes=30)
+                        < datetime.datetime.utcnow()
+                    ):
+                        async with session.post(
+                            "https://api.twitter.com/2/oauth2/token",
+                            headers={
+                                "Authorization": f"""Basic {b64encode(f"{config['twid']}:{config['twsecret']}".encode()).decode()}""",
+                                "Content-Type": "application/x-www-form-urlencoded",
+                            },
+                            data=f"refresh_token={document['refresh']}&grant_type=refresh_token&client_id={config['twid']}",
+                        ) as r:
+                            resp = await r.json()
+                        if "access_token" not in resp or "refresh_token" not in resp:
+                            await self.db.connected.delete_one(
+                                filter={"_id": int(reaction.user_id)}
+                            )
+                        else:
+                            await self.db.connected.update_one(
+                                filter={"_id": int(reaction.user_id)},
+                                update={
+                                    "$set": {
+                                        "token": resp["access_token"],
+                                        "refresh": resp["refresh_token"],
+                                        "ttl": datetime.datetime.utcnow(),
+                                    }
+                                },
+                            )
+                            token = resp["access_token"]
+                    if reaction.emoji.name == "❤️":
+                        async with session.post(
+                            f"https://api.twitter.com/2/users/{document['tid']}/likes",
+                            headers={"Authorization": f"Bearer {token}"},
+                            json={"tweet_id": str(id)},
+                        ) as r:
+                            resp = await r.json()
+                        if resp["data"]["liked"]:
+                            return
+                        else:
+                            return await msg.remove_reaction_from(reaction.emoji, reaction.user_id)
+                    elif reaction.emoji.name == "🔁":
+                        async with session.post(
+                            f"https://api.twitter.com/2/users/{document['tid']}/retweets",
+                            headers={"Authorization": f"Bearer {token}"},
+                            json={"tweet_id": str(id)},
+                        ) as r:
+                            resp = await r.json()
+                        if resp["data"]["retweeted"]:
+                            return
+                        else:
+                            return await msg.remove_reaction_from(reaction.emoji, reaction.user_id)
+
+    @extension_listener(name="on_message_reaction_remove")
+    async def _reaction_remove(self, reaction: MessageReaction):
+        if reaction.emoji.name not in ["🔁", "❤️"]:
+            return
+        msg: Message = await get(
+            self.client, Message, object_id=reaction.message_id, parent_id=reaction.channel_id
+        )
+        if msg.content:
+            id = get_post_id(msg.content)
+            if id:
+                document = await self.db.connected.find_one(filter={"_id": int(reaction.user_id)})
+                if not document:
+                    return
+                token = document["token"]
+                async with aiohttp.ClientSession() as session:
+                    if (
+                        document["ttl"] + datetime.timedelta(hours=1, minutes=30)
+                        < datetime.datetime.utcnow()
+                    ):
+                        async with session.post(
+                            "https://api.twitter.com/2/oauth2/token",
+                            headers={
+                                "Authorization": f"""Basic {b64encode(f"{config['twid']}:{config['twsecret']}".encode()).decode()}""",
+                                "Content-Type": "application/x-www-form-urlencoded",
+                            },
+                            data=f"refresh_token={document['refresh']}&grant_type=refresh_token&client_id={config['twid']}",
+                        ) as r:
+                            resp = await r.json()
+                        if "access_token" not in resp or "refresh_token" not in resp:
+                            await self.db.connected.delete_one(
+                                filter={"_id": int(reaction.user_id)}
+                            )
+                        else:
+                            await self.db.connected.update_one(
+                                filter={"_id": int(reaction.user_id)},
+                                update={
+                                    "$set": {
+                                        "token": resp["access_token"],
+                                        "refresh": resp["refresh_token"],
+                                        "ttl": datetime.datetime.utcnow(),
+                                    }
+                                },
+                            )
+                            token = resp["access_token"]
+                    if reaction.emoji.name == "❤️":
+                        async with session.delete(
+                            f"https://api.twitter.com/2/users/{document['tid']}/likes/{id}",
+                            headers={"Authorization": f"Bearer {token}"},
+                        ) as r:
+                            resp = await r.json()
+                    elif reaction.emoji.name == "🔁":
+                        async with session.delete(
+                            f"https://api.twitter.com/2/users/{document['tid']}/retweets/{id}",
+                            headers={"Authorization": f"Bearer {token}"},
+                        ) as r:
+                            resp = await r.json()
+
     @extension_command()
     async def twitter(self, *args, **kwargs):
         ...
@@ -65,6 +215,7 @@ class twitter(Extension):
     @twitter.subcommand()
     async def link(self, ctx: CommandContext):
         """連結Twitter"""
+        await ctx.defer(ephemeral=True)
         twitter = await self.db.connected.find_one(filter={"_id": int(ctx.author.id)})
         pending = await self.db.pending.find_one(filter={"_id": int(ctx.author.id)})
         if not twitter and not pending:
@@ -87,17 +238,18 @@ class twitter(Extension):
                 await self.tw.get_user(id=twitter["tid"], user_fields=["username"])
             ).data.username
             await ctx.send(
-                f":x: baka 你已連結到 [@{resp}](<https://twitter.com/{resp}>) 啦！\n請先用 </twitter disconnect:{self.client._find_command('twitter').id}> 解除連結喔！",
+                f":x: baka 你已連結到 [@{resp}](<https://twitter.com/{resp}>) 啦！\n請先用 </twitter unlink:{self.client._find_command('twitter').id}> 解除連結喔！",
                 ephemeral=True,
             )
 
     @twitter.subcommand()
     async def unlink(self, ctx: CommandContext):
         """解除Twitter連結"""
-        twitter = await self.db.connected.find_one(filter={"_id": str(ctx.author.id)})
+        await ctx.defer(ephemeral=True)
+        twitter = await self.db.connected.find_one(filter={"_id": int(ctx.author.id)})
         if not twitter:
             await ctx.send(
-                f":x: baka 你沒有連結Twitter啦！\n請先用 </twitter connect:{self.client._find_command('twitter').id}> 連結Twitter喔！",
+                f":x: baka 你沒有連結Twitter啦！\n請先用 </twitter link:{self.client._find_command('twitter').id}> 連結Twitter喔！",
                 ephemeral=True,
             )
         else:
@@ -182,7 +334,84 @@ class twitter(Extension):
                     ),
                 ],
             ),
+            components=[
+                ActionRow(
+                    components=[
+                        Button(
+                            style=ButtonStyle.PRIMARY,
+                            label="跟隨使用者",
+                            custom_id=str(
+                                PersistentCustomID(self.client, "twitter_follow", lookup.data.id)
+                            ),
+                        ),
+                    ]
+                )
+            ],
         )
+
+    @extension_persistent_component("twitter_follow")
+    async def _twitter_follow(self, ctx: ComponentContext, package):
+        await ctx.defer(ephemeral=True)
+        if ctx.author.id != ctx.message.interaction.user.id:
+            return await ctx.send(":x: baka 你不是這個查詢的主人啦！", ephemeral=True)
+        document = await self.db.connected.find_one(filter={"_id": int(ctx.author.id)})
+        if not document:
+            await ctx.message.disable_all_components()
+            return await ctx.send(
+                f":x: baka 你沒有連結Twitter啦！\n請先用 </twitter link:{self.client._find_command('twitter').id}> 連結Twitter喔！"
+            )
+        if document["tid"] == package:
+            await ctx.message.disable_all_components()
+            return await ctx.send(":x: baka 你不能跟隨自己啦！")
+        token = document["token"]
+        async with aiohttp.ClientSession() as session:
+            if (
+                document["ttl"] + datetime.timedelta(hours=1, minutes=30)
+                < datetime.datetime.utcnow()
+            ):
+                async with session.post(
+                    "https://api.twitter.com/2/oauth2/token",
+                    headers={
+                        "Authorization": f"""Basic {b64encode(f"{config['twid']}:{config['twsecret']}".encode()).decode()}""",
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    data=f"refresh_token={document['refresh']}&grant_type=refresh_token&client_id={config['twid']}",
+                ) as r:
+                    resp = await r.json()
+                if "access_token" not in resp or "refresh_token" not in resp:
+                    await self.db.connected.delete_one(filter={"_id": int(ctx.author.id)})
+                    return ctx.send(
+                        f":x: 無法驗證使用者，請使用 </twitter link:{self.client._find_command('twitter').id}> 重新連結Twitter喔！"
+                    )
+                else:
+                    await self.db.connected.update_one(
+                        filter={"_id": int(ctx.author.id)},
+                        update={
+                            "$set": {
+                                "token": resp["access_token"],
+                                "refresh": resp["refresh_token"],
+                                "ttl": datetime.datetime.utcnow(),
+                            }
+                        },
+                    )
+                    token = resp["access_token"]
+            async with session.post(
+                f"https://api.twitter.com/2/users/{document['tid']}/following",
+                headers={"Authorization": f"Bearer {token}"},
+                json={"target_user_id": str(package)},
+            ) as r:
+                resp = await r.json()
+            if resp["data"]["following"]:
+                await ctx.message.disable_all_components()
+                return await ctx.send("跟隨使用者了！")
+            elif not resp["data"]["following"] and resp["data"]["pending_follow"]:
+                await ctx.message.disable_all_components()
+                return await ctx.send("發出跟隨請求了！")
+            else:
+                await ctx.message.disable_all_components()
+                return await ctx.send(
+                    f"發生錯誤了！請稍後再試，或是使用 </feedback:{self.client._find_command('feedback').id}> 回報喔！"
+                )
 
     @twitter.subcommand()
     @option(description="搜尋內容", max_length=128)
@@ -229,13 +458,12 @@ class twitter(Extension):
             ef.append(
                 EmbedField(
                     name=f"{author['name']} (@{author['username']})",
-                    value=f"[**[推文連結🔗]**]({turl})\n{markdown(content)}",
+                    value=f"[**[推文連結🔗]**]({turl})\n> {markdown(content).replace(newline, f'{newline}> ')}",
                 )
             )
         await ctx.send(
             embeds=Embed(
-                title="找到了！",
-                description=f"**{min(limit, len(ef))}** 個推文",
+                title=f"找到了 **{min(limit, len(ef))}** 個推文！",
                 fields=ef[:limit] if len(ef) > limit else ef,
                 color=0x1DA1F2,
             )

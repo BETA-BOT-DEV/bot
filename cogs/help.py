@@ -36,7 +36,7 @@ maineb = raweb(
     "看來你需要一點幫助呢！", "我來告訴你我可以做什麼吧！\n你可以使用下面的選單來瀏覽幫助頁面。\n\n如果你想提出建議或是回報問題，請使用 `/feedback` 指令。"
 )
 
-general_option = SelectOption(  # help, info, whopinged, feedback
+general_option = SelectOption(  # help, info, whopinged, feedback, legal
     label="一般",
     description="一般/資訊指令",
     value="general",
@@ -46,7 +46,7 @@ image_option = SelectOption(  # image, reaction, generate
     description="圖片相關指令",
     value="image",
 )
-fun_option = SelectOption(  # twitter, typing, say, 8ball, google-tutorial, lengthen, lmgtfy, translate, random, unknown, whatanime
+fun_option = SelectOption(  # twitter, typing, say, 8ball, google-tutorial, lengthen, lmgtfy, translate, random, unknown, whatanime, temp
     label="有趣",
     description="各種有趣的指令",
     value="fun",
@@ -82,7 +82,8 @@ general_select = ActionRow(
             custom_id="help_command_select",
             placeholder="選擇一個指令",
             options=[
-                SelectOption(label=i, value=i) for i in ["help", "info", "whopinged", "feedback"]
+                SelectOption(label=i, value=i)
+                for i in ["help", "info", "whopinged", "feedback", "legal"]
             ],
             min_values=1,
             max_values=1,
@@ -298,6 +299,7 @@ class help(Extension):
             "dvc": ["管理動態語音頻道設定。", "/dvc <子指令>", "/dvc settings", False],
             "thread": ["管理貼文或討論串。", "/thread <子指令>", "/thread archive", False],
             "safety": ["伺服器安全指令。", "/safety <子指令>", "/safety check", False],
+            "legal": ["查看法律文件。", "/legal <子指令>", "/legal terms", False],
             "temp": ["幫你轉換溫度單位。", "/temp <數值> <原始單位> <目標單位>", "/temp 10 c f", False],
         }
         cmd = cmds[selected[0]]
