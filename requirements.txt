@@ -5,6 +5,7 @@ interactions-files
 interactions-lavalink
 interactions-persistence
 interactions-tasks
+interactions-wait-for
 loguru
 motor[srv]
 pet-pet-gif
