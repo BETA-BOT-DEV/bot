@@ -202,7 +202,7 @@ class fun(PersistenceExtension):
             [board[0][0], board[1][1], board[2][2]],
             [board[2][0], board[1][1], board[0][2]],
         ]
-        if [player][player][player] in wincond:
+        if [player, player, player] in wincond:
             return True
         return False
 
