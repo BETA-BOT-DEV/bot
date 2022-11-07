@@ -223,13 +223,8 @@ class hentai(Extension):
                 ephemeral=True,
             )
         await ctx.defer()
-        match randint(0, 1):
-            case 0:
-                url = await api_request("https://hmtai.herokuapp.com/v2/tentacle")
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
-            case 1:
-                url = await api_request("https://nekobot.xyz/api/image?type=tentacle")
-                await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
+        url = await api_request("https://nekobot.xyz/api/image?type=tentacle")
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @hentai.subcommand()
     async def boobs(self, ctx: CommandContext):
