@@ -229,7 +229,7 @@ class general(Extension):
                 ),
                 EmbedField(
                     name="📈 狀態",
-                    value=f"RAM 使用量: **{round(tracemalloc.get_traced_memory()[0]/1000000, 2)}**mb\n延遲: 大概 **{abs(round((ctx.id.timestamp - callback_time).total_seconds()/1000, 2))}**ms 吧？\n我會一直陪著你喔！",
+                    value=f"RAM 使用量: **{round(tracemalloc.get_traced_memory()[0]/1000000, 2)}**mb\n延遲: 大概 **{abs(round((ctx.id.timestamp - callback_time).total_seconds()*1000, 2))}**ms 吧？\n我會一直陪著你喔！",
                     inline=False,
                 ),
             ],
