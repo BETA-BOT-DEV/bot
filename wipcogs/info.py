@@ -14,6 +14,7 @@
 import os
 import sys
 import tracemalloc
+from datetime import datetime
 from random import randint
 
 import interactions
@@ -208,6 +209,7 @@ class general(Extension):
     @_bot.subcommand(name="status")
     async def bot_status(self, ctx: CommandContext):
         """查看我的狀態"""
+        callback_time = datetime.utcnow()
         await ctx.defer()
         channels = 0
         users = 0
@@ -227,7 +229,7 @@ class general(Extension):
                 ),
                 EmbedField(
                     name="📈 狀態",
-                    value=f"RAM 使用量: **{round(tracemalloc.get_traced_memory()[0]/1000000, 2)}**mb\n延遲: 大概 **{abs(round(self.client.latency, 2))}**ms 吧？但是我會一直陪著你喔！",
+                    value=f"RAM 使用量: **{round(tracemalloc.get_traced_memory()[0]/1000000, 2)}**mb\n延遲: 大概 **{abs(round((ctx.id.timestamp - callback_time).total_seconds()/1000, 2))}**ms 吧？\n我會一直陪著你喔！",
                     inline=False,
                 ),
             ],
