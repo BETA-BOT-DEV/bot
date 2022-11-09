@@ -121,30 +121,43 @@ class poll(PersistenceExtension):
             fields=[
                 EmbedField(name="問題", value=question, inline=False),
                 EmbedField(
-                    name="描述", value=description if description else "*[沒有填寫]*", inline=False
+                    name="描述", value=description or "*[沒有填寫]*", inline=False
                 ),
                 EmbedField(
                     name="選項",
                     value="".join([f"{i+1}. {v}\n" for i, v in enumerate(oplist)]),
                     inline=False,
                 ),
-                EmbedField(name="限制身份組", value=limit.mention if limit else "沒有身份組限制", inline=False),
                 EmbedField(
-                    name="提及身份組", value=mention.mention if mention else "沒有提及身份組", inline=False
+                    name="限制身份組",
+                    value=limit.mention if limit else "沒有身份組限制",
+                    inline=False,
                 ),
-                EmbedField(name="公開投票", value="是" if public else "否", inline=False),
                 EmbedField(
-                    name="每個使用者可選項數", value=multiple if multiple <= len(oplist) else 1, inline=False
+                    name="提及身份組",
+                    value=mention.mention if mention else "沒有提及身份組",
+                    inline=False,
+                ),
+                EmbedField(
+                    name="公開投票", value="是" if public else "否", inline=False
+                ),
+                EmbedField(
+                    name="每個使用者可選項數",
+                    value=multiple if multiple <= len(oplist) else 1,
+                    inline=False,
                 ),
                 EmbedField(
                     name="圖片",
-                    value=image.url if image and "image" in image.content_type else "*[沒有填寫]*",
+                    value=image.url
+                    if image and "image" in image.content_type
+                    else "*[沒有填寫]*",
                     inline=False,
                 ),
             ],
             color=randint(0, 0xFFFFFF),
             footer=EmbedFooter(text="如需修改圖片，請取消並重新發起投票。"),
         )
+
         await ctx.send(embeds=embed, components=setting)
 
     @extension_component("poll_confirm")
@@ -164,134 +177,6 @@ class poll(PersistenceExtension):
     async def _poll_config(self, ctx: ComponentContext, selected: List[str]):
         if ctx.author.id != ctx.message.interaction.user.id:
             return await ctx.send(":x: baka 你不是這個投票的發起人！", ephemeral=True)
-        match selected:
-            case "type":
-                modal = Modal(
-                    custom_id="poll_config_type",
-                    title="基礎設定",
-                    components=[
-                        TextInput(
-                            style=TextStyleType.SHORT,
-                            label="問題",
-                            custom_id="question",
-                            placeholder="請輸入投票問題",
-                            max_length=256,
-                            value=ctx.message.embeds[0].fields[0].value,
-                        ),
-                        TextInput(
-                            style=TextStyleType.PARAGRAPH,
-                            label="描述",
-                            custom_id="description",
-                            placeholder="請輸入投票描述",
-                            max_length=1024,
-                            value=""
-                            if ctx.message.embeds[0].fields[1].value == "*[沒有填寫]*"
-                            else ctx.message.embeds[0].fields[1].value,
-                            required=False,
-                        ),
-                        TextInput(
-                            style=TextStyleType.SHORT,
-                            label="選項 (以逗號分隔)",
-                            custom_id="options",
-                            placeholder="請輸入投票選項",
-                            max_length=1024,
-                            value=",".join(
-                                [
-                                    v.split(". ")[1]
-                                    for v in ctx.message.embeds[0].fields[2].value.split("\n")
-                                ]
-                            ),
-                            required=False,
-                        ),
-                    ],
-                )
-                await ctx.popup(modal)
-            case "role":
-                components = [
-                    ActionRow(
-                        components=[
-                            SelectMenu(
-                                type=ComponentType.ROLE_SELECT,
-                                custom_id=str(
-                                    PersistentCustomID(
-                                        self.client, "poll_config_role_limit", int(ctx.message.id)
-                                    )
-                                ),
-                                placeholder="限制身份組",
-                                max_values=1,
-                                min_values=0,
-                            )
-                        ]
-                    ),
-                    ActionRow(
-                        components=[
-                            SelectMenu(
-                                type=ComponentType.ROLE_SELECT,
-                                custom_id=str(
-                                    PersistentCustomID(
-                                        self.client, "poll_config_role_mention", int(ctx.message.id)
-                                    )
-                                ),
-                                placeholder="提及身份組",
-                                max_values=1,
-                                min_values=0,
-                            )
-                        ]
-                    ),
-                    ActionRow(
-                        components=[
-                            Button(
-                                style=ButtonStyle.PRIMARY,
-                                label="清除選擇",
-                                custom_id=str(
-                                    PersistentCustomID(
-                                        self.client, "poll_config_role_clear", int(ctx.message.id)
-                                    )
-                                ),
-                            )
-                        ]
-                    ),
-                ]
-                await ctx.send("身份組設定 (上: 限制 | 下: 提及)", components=components, ephemeral=True)
-            case "other":
-                components = [
-                    ActionRow(
-                        components=[
-                            SelectMenu(
-                                custom_id=str(
-                                    PersistentCustomID(
-                                        self.client, "poll_config_other_public", int(ctx.message.id)
-                                    )
-                                ),
-                                placeholder="公開投票",
-                                max_values=1,
-                                min_values=1,
-                                options=[
-                                    SelectOption(label="公開投票: 是", value="True"),
-                                    SelectOption(label="公開投票: 否", value="False"),
-                                ],
-                            )
-                        ]
-                    ),
-                    ActionRow(
-                        components=[
-                            Button(
-                                style=ButtonStyle.PRIMARY,
-                                label="修改每個使用者可選項數",
-                                custom_id=str(
-                                    PersistentCustomID(
-                                        self.client,
-                                        "poll_config_other_multiple",
-                                        int(ctx.message.id),
-                                    )
-                                ),
-                            )
-                        ]
-                    ),
-                ]
-                await ctx.send(
-                    "其他設定 (上: 公開投票 | 下: 每個使用者可選項數)", components=components, ephemeral=True
-                )
 
     @extension_modal("poll_config_type")
     async def _poll_config_type(
@@ -299,7 +184,7 @@ class poll(PersistenceExtension):
     ):
         oplist = options.split(",") if options and "," in options else ["是", "否"]
         ctx.message.embeds[0].fields[0].value = question
-        ctx.message.embeds[0].fields[1].value = description if description else "*[沒有填寫]*"
+        ctx.message.embeds[0].fields[1].value = description or "*[沒有填寫]*"
         ctx.message.embeds[0].fields[2].value = "".join(
             [f"{i+1}. {v}\n" for i, v in enumerate(oplist)]
         )

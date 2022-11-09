@@ -165,9 +165,17 @@ class welcomer(PersistenceExtension):
         """設定歡迎訊息"""
         document = await self._welcome.find_one({"_id": int(ctx.guild_id)})
         channel = (
-            "*沒有設定*" if not (document and document["channel"]) else f"<#{document['channel']}>"
+            f"<#{document['channel']}>"
+            if (document and document["channel"])
+            else "*沒有設定*"
         )
-        role = "*沒有設定*" if not (document and document["role"]) else f"<@&{document['role']}>"
+
+        role = (
+            f"<@&{document['role']}>"
+            if (document and document["role"])
+            else "*沒有設定*"
+        )
+
         content = "*沒有設定*" if not (document and document["message"]) else document["message"]
         embed_title = (
             "*沒有設定*" if not (document and document["embed_title"]) else document["embed_title"]
@@ -273,17 +281,17 @@ class welcomer(PersistenceExtension):
             for i in [2, 4]
         )
         await ctx.send(
-            content=f"歡迎訊息的預覽來了！\n\n{content if content else ''}",
-            embeds=[]
-            if not (ebtitle or ebdesc)
-            else [
+            content=f"歡迎訊息的預覽來了！\n\n{content or ''}",
+            embeds=[
                 Embed(
                     title=ebtitle,
                     description=ebdesc,
                     footer=EmbedFooter(text=ebfooter) if ebfooter else None,
-                    color=settings[5] if settings[5] else 0x000000,
+                    color=settings[5] or 0x000000,
                 )
-            ],
+            ]
+            if (ebtitle or ebdesc)
+            else [],
             ephemeral=True,
         )
 
@@ -531,11 +539,11 @@ class welcomer(PersistenceExtension):
             if i > 0xFFFFFF or i < 0:
                 return await ctx.send(":x: baka 你的嵌入顏色不正確喔！", ephemeral=True)
         msg = await get(self.client, Message, object_id=package, parent_id=ctx.channel_id)
-        msg.embeds[0].fields[1].value = content if content else "*沒有設定*"
-        msg.embeds[0].fields[2].value = embed_title if embed_title else "*沒有設定*"
-        msg.embeds[0].fields[3].value = embed_description if embed_description else "*沒有設定*"
-        msg.embeds[0].fields[4].value = embed_footer if embed_footer else "*沒有設定*"
-        msg.embeds[0].fields[5].value = embed_color if embed_color else "*沒有設定*"
+        msg.embeds[0].fields[1].value = content or "*沒有設定*"
+        msg.embeds[0].fields[2].value = embed_title or "*沒有設定*"
+        msg.embeds[0].fields[3].value = embed_description or "*沒有設定*"
+        msg.embeds[0].fields[4].value = embed_footer or "*沒有設定*"
+        msg.embeds[0].fields[5].value = embed_color or "*沒有設定*"
         await msg.edit(embeds=msg.embeds, components=msg.components)
         await ctx.send("我會把設定記住的！", ephemeral=True)
 
@@ -555,12 +563,21 @@ class welcomer(PersistenceExtension):
         """設定離開訊息"""
         document = await self._farewell.find_one({"_id": int(ctx.guild_id)})
         channel = (
-            "*沒有設定*" if not (document and document["channel"]) else f"<#{document['channel']}>"
+            f"<#{document['channel']}>"
+            if (document and document["channel"])
+            else "*沒有設定*"
         )
-        content = "*沒有設定*" if not (document and document["message"]) else document["message"]
+
+        content = (
+            document["message"] if (document and document["message"]) else "*沒有設定*"
+        )
+
         embed_title = (
-            "*沒有設定*" if not (document and document["embed_title"]) else document["embed_title"]
+            document["embed_title"]
+            if (document and document["embed_title"])
+            else "*沒有設定*"
         )
+
         embed_description = (
             "*沒有設定*"
             if not (document and document["embed_description"])
@@ -649,17 +666,17 @@ class welcomer(PersistenceExtension):
             for i in [1, 2, 3, 4]
         )
         await ctx.send(
-            content=f"離開訊息的預覽來了！\n\n{content if content else ''}",
-            embeds=[]
-            if not (ebtitle or ebdesc)
-            else [
+            content=f"離開訊息的預覽來了！\n\n{content or ''}",
+            embeds=[
                 Embed(
                     title=ebtitle,
                     description=ebdesc,
                     footer=EmbedFooter(text=ebfooter) if ebfooter else None,
-                    color=settings[5] if settings[5] else 0x000000,
+                    color=settings[5] or 0x000000,
                 )
-            ],
+            ]
+            if (ebtitle or ebdesc)
+            else [],
             ephemeral=True,
         )
 
@@ -887,11 +904,11 @@ class welcomer(PersistenceExtension):
             if i > 0xFFFFFF or i < 0:
                 return await ctx.send(":x: baka 你的嵌入顏色不正確喔！", ephemeral=True)
         msg = await get(self.client, Message, object_id=package, parent_id=ctx.channel_id)
-        msg.embeds[0].fields[1].value = content if content else "*沒有設定*"
-        msg.embeds[0].fields[2].value = embed_title if embed_title else "*沒有設定*"
-        msg.embeds[0].fields[3].value = embed_description if embed_description else "*沒有設定*"
-        msg.embeds[0].fields[4].value = embed_footer if embed_footer else "*沒有設定*"
-        msg.embeds[0].fields[5].value = embed_color if embed_color else "*沒有設定*"
+        msg.embeds[0].fields[1].value = content or "*沒有設定*"
+        msg.embeds[0].fields[2].value = embed_title or "*沒有設定*"
+        msg.embeds[0].fields[3].value = embed_description or "*沒有設定*"
+        msg.embeds[0].fields[4].value = embed_footer or "*沒有設定*"
+        msg.embeds[0].fields[5].value = embed_color or "*沒有設定*"
         await msg.edit(embeds=msg.embeds, components=msg.components)
         await ctx.send("我會把設定記住的！", ephemeral=True)
 

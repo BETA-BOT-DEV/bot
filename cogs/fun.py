@@ -202,9 +202,7 @@ class fun(PersistenceExtension):
             [board[0][0], board[1][1], board[2][2]],
             [board[2][0], board[1][1], board[0][2]],
         ]
-        if [player, player, player] in wincond:
-            return True
-        return False
+        return [player, player, player] in wincond
 
     def build_board(self, current=None, update=None):
         p1win = False
@@ -398,7 +396,9 @@ class fun(PersistenceExtension):
                         EmbedField(name="原文", value=text, inline=False),
                         EmbedField(
                             name="翻譯",
-                            value=resp if len(resp) <= 1024 else resp[:1021] + "...",
+                            value=resp
+                            if len(resp) <= 1024
+                            else f"{resp[:1021]}...",
                             inline=False,
                         ),
                     ],
@@ -455,7 +455,9 @@ class fun(PersistenceExtension):
                         EmbedField(name="原文", value=text, inline=False),
                         EmbedField(
                             name="翻譯",
-                            value=resp if len(resp) <= 1024 else resp[:1021] + "...",
+                            value=resp
+                            if len(resp) <= 1024
+                            else f"{resp[:1021]}...",
                             inline=False,
                         ),
                     ],
@@ -492,7 +494,7 @@ class fun(PersistenceExtension):
         await ctx.send(
             embeds=Embed(
                 title=f"{resp['data']['Media']['title']['native']}",
-                description=f"中文標題: {resp['data']['Media']['title']['chinese'] if resp['data']['Media']['title']['chinese'] else '未知'}{newline}集數: {url['result'][0]['episode'] if url['result'][0]['episode'] else '未知/無'}{newline}時間: {timedelta(seconds=int(url['result'][0]['from']))} - {timedelta(seconds=int(url['result'][0]['to']))}{newline}相似度: {url['result'][0]['similarity'] * 100:.2f}%",
+                description=f"中文標題: {resp['data']['Media']['title']['chinese'] or '未知'}{newline}集數: {url['result'][0]['episode'] or '未知/無'}{newline}時間: {timedelta(seconds=int(url['result'][0]['from']))} - {timedelta(seconds=int(url['result'][0]['to']))}{newline}相似度: {url['result'][0]['similarity'] * 100:.2f}%",
                 image=EmbedImageStruct(url="attachment://preview.jpg"),
                 footer=EmbedFooter(text="資料由 trace.moe 提供"),
                 url=resp["data"]["Media"]["siteUrl"],

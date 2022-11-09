@@ -43,7 +43,7 @@ class nsfw(Extension):
     async def pgif(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
-        if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
+        if not ctx.channel.nsfw and ctx.channel.type != ChannelType.DM:
             return await ctx.send(
                 embeds=raweb(
                     desc=":x: 不可以色色！這裡不是限制級頻道喔！",
@@ -61,7 +61,7 @@ class nsfw(Extension):
     async def _4k(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
-        if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
+        if not ctx.channel.nsfw and ctx.channel.type != ChannelType.DM:
             return await ctx.send(
                 embeds=raweb(
                     desc=":x: 不可以色色！這裡不是限制級頻道喔！",
@@ -79,7 +79,7 @@ class nsfw(Extension):
     async def anal(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
-        if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
+        if not ctx.channel.nsfw and ctx.channel.type != ChannelType.DM:
             return await ctx.send(
                 embeds=raweb(
                     desc=":x: 不可以色色！這裡不是限制級頻道喔！",
@@ -97,7 +97,7 @@ class nsfw(Extension):
     async def ass(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
-        if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
+        if not ctx.channel.nsfw and ctx.channel.type != ChannelType.DM:
             return await ctx.send(
                 embeds=raweb(
                     desc=":x: 不可以色色！這裡不是限制級頻道喔！",
@@ -115,7 +115,7 @@ class nsfw(Extension):
     async def gonewild(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
-        if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
+        if not ctx.channel.nsfw and ctx.channel.type != ChannelType.DM:
             return await ctx.send(
                 embeds=raweb(
                     desc=":x: 不可以色色！這裡不是限制級頻道喔！",
@@ -133,7 +133,7 @@ class nsfw(Extension):
     async def pussy(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
-        if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
+        if not ctx.channel.nsfw and ctx.channel.type != ChannelType.DM:
             return await ctx.send(
                 embeds=raweb(
                     desc=":x: 不可以色色！這裡不是限制級頻道喔！",
@@ -151,7 +151,7 @@ class nsfw(Extension):
     async def thigh(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
-        if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
+        if not ctx.channel.nsfw and ctx.channel.type != ChannelType.DM:
             return await ctx.send(
                 embeds=raweb(
                     desc=":x: 不可以色色！這裡不是限制級頻道喔！",
@@ -169,7 +169,7 @@ class nsfw(Extension):
     async def boobs(self, ctx: CommandContext):
         """要色色嗎？"""
         await ctx.get_channel()
-        if not ctx.channel.nsfw and not ctx.channel.type == ChannelType.DM:
+        if not ctx.channel.nsfw and ctx.channel.type != ChannelType.DM:
             return await ctx.send(
                 embeds=raweb(
                     desc=":x: 不可以色色！這裡不是限制級頻道喔！",

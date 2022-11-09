@@ -188,7 +188,7 @@ def _command(name, description: str = "", usage: str = "", example: str = "", ns
         example = "我的主人很懶，沒有留下使用範例。"
     return raweb(
         name,
-        f"{description}\n\n**使用方法**\n```{usage}```\n\n**範例**\n```{example}```\n\n{'' if not nsfw else '⚠️ 這個指令可能會有成人內容，請注意。'}",
+        f"{description}\n\n**使用方法**\n```{usage}```\n\n**範例**\n```{example}```\n\n{'⚠️ 這個指令可能會有成人內容，請注意。' if nsfw else ''}",
     )
 
 

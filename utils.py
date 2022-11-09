@@ -27,8 +27,10 @@ logger.add(sys.stderr)
 logger.add(
     "./logs/{time:YYYY-MM-DD_HH-mm-ss_SSS!UTC}.log",
     rotation=time(
-        math.trunc(server_offset) if server_offset >= 0 else 24 + math.trunc(server_offset),
-        int(server_offset * 4 % 4 * 15) if not server_offset.is_integer() else 0,
+        math.trunc(server_offset)
+        if server_offset >= 0
+        else 24 + math.trunc(server_offset),
+        0 if server_offset.is_integer() else int(server_offset * 4 % 4 * 15),
         0,
         0,
     ),
@@ -37,6 +39,7 @@ logger.add(
     compression="gz",
     diagnose=False,
 )
+
 
 
 import json
@@ -86,7 +89,7 @@ def raweb(
         description=desc,
         image=image,
         footer=footer,
-        color=color if color else randint(0, 0xFFFFFF),
+        color=color or randint(0, 0xFFFFFF),
     )
 
 
@@ -108,9 +111,7 @@ async def request_img(url: str):
 
 async def requset_raw_img(url: str):
     async with aiohttp.ClientSession() as s, s.get(url) as r:
-        if r.status == 404:
-            return None
-        return await r.content.read()
+        return None if r.status == 404 else await r.content.read()
 
 
 async def translate(text: str, target: str, source: str = ""):
@@ -155,56 +156,6 @@ def lengthen_url(url: str, mode: str = "o"):
         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com"
     ):
         return 1
-    match mode:
-        case "o":
-            url = "".join(list(result[0]))
-            utf8 = []
-            for i in url:
-                code = ord(i)
-                if code < 0x80:
-                    utf8.append(code)
-                elif code < 0x800:
-                    utf8.append(0xC0 | (code >> 6), 0x80 | (code & 0x3F))
-                elif code < 0xD800 and code >= 0xE000:
-                    utf8.append(
-                        0xE0 | (code >> 12), 0x80 | ((code >> 6) & 0x3F), 0x80 | (code & 0x3F)
-                    )
-                else:
-                    code = ((code & 0x3FF) << 10) | (code & 0x3FF)
-                    utf8.append(
-                        0xF0 | (code >> 18),
-                        0x80 | ((code >> 12) & 0x3F),
-                        0x80 | ((code >> 6) & 0x3F),
-                        0x80 | (code & 0x3F),
-                    )
-            base4 = []
-            for i in utf8:
-                if i == 0:
-                    base4.append("0".rjust(4, "0"))
-                nums = []
-                while i:
-                    i, r = divmod(i, 4)
-                    nums.append(str(r))
-                base4.append("".join(reversed(nums)).rjust(4, "0"))
-            return (
-                "http://ooooooooooooooooooooooo.ooo/"
-                + o_current
-                + "".join(list(map(lambda x: o_enc[int(x)], "".join(base4))))
-            )
-        case "a":
-            url = "https://" + result[0][1]
-            filler = "a"
-            new = "".join(list(map(lambda x: a_enc[x], "".join([hex(ord(i))[2:] for i in url]))))
-            while len(new) + len(filler) < 200:
-                filler += choice(list(a_enc.values()))
-            return (
-                "https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com/"
-                + filler
-                + "?"
-                + new
-            )
-        case _:
-            return None
 
 
 async def bullshit_generator(topic: str, length: int):

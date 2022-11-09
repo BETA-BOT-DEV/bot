@@ -173,7 +173,7 @@ async def on_command_error(ctx: CommandContext, error: Exception):
     except:  # noqa: E722
         tb = f"Traceback: \n```{markdown(traceback.format_exc())}```"
     if len(tb) > 4096:
-        tb = tb[:4090] + "...```"
+        tb = f"{tb[:4090]}...```"
     msg = error.args[0].replace("\n  ", "\n") or "Unknown error."
     await Channel(
         **await client._http.create_dm(recipient_id=int(client.me.owner.id)), _client=client._http

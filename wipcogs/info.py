@@ -159,9 +159,15 @@ class general(Extension):
                 title="伺服器查詢結果",
                 description=f"以下是 {ctx.guild.name} 伺服器的相關資訊喔！",
                 fields=[
-                    EmbedField(name="**伺服器名稱**", value=f"`{ctx.guild.name}`", inline=True),
-                    EmbedField(name="**伺服器ID**", value=str(ctx.guild.id), inline=True),
-                    EmbedField(name="**伺服器擁有者**", value=owner.mention, inline=True),
+                    EmbedField(
+                        name="**伺服器名稱**", value=f"`{ctx.guild.name}`", inline=True
+                    ),
+                    EmbedField(
+                        name="**伺服器ID**", value=str(ctx.guild.id), inline=True
+                    ),
+                    EmbedField(
+                        name="**伺服器擁有者**", value=owner.mention, inline=True
+                    ),
                     EmbedField(
                         name="**頻道數量**",
                         value=f"文字頻道: {text}\n語音頻道: {voice}\n分類: {category}",
@@ -174,22 +180,21 @@ class general(Extension):
                     ),
                     EmbedField(
                         name="**伺服器加成**",
-                        value=f"數量: {ctx.guild.premium_subscription_count if ctx.guild.premium_subscription_count else 0}\n等級: {ctx.guild.premium_tier if ctx.guild.premium_tier else 0}",
+                        value=f"數量: {ctx.guild.premium_subscription_count or 0}\n等級: {ctx.guild.premium_tier or 0}",
                         inline=True,
                     ),
-                    # EmbedField(
-                    #     name="**伺服器表情符號**",
-                    #     value=f"{len(ctx.guild.emojis)}/{'50'if not ctx.guild.premium_tier or ctx.guild.premium_tier == 0 else '100' if ctx.guild.premium_tier == 1 else '150' if ctx.guild.premium_tier == 2 else '250'}",
-                    #     inline=True,
-                    # ),
                     EmbedField(
                         name="**創建時間**",
                         value=f"<t:{round(ctx.guild.id.timestamp.timestamp())}:F> (<t:{round(ctx.guild.id.timestamp.timestamp())}:R>)",
                         inline=True,
                     ),
                 ],
-                author=EmbedAuthor(name=ctx.guild.name, icon_url=ctx.guild.icon_url),
-                thumbnail=EmbedImageStruct(url=ctx.guild.icon_url) if ctx.guild.icon else None,
+                author=EmbedAuthor(
+                    name=ctx.guild.name, icon_url=ctx.guild.icon_url
+                ),
+                thumbnail=EmbedImageStruct(url=ctx.guild.icon_url)
+                if ctx.guild.icon
+                else None,
                 image=EmbedImageStruct(url=f"{ctx.guild.banner_url}?size=480")
                 if ctx.guild.banner
                 else None,

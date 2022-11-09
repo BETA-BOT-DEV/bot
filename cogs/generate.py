@@ -55,7 +55,7 @@ class generate(Extension):
         data = await bullshit_generator(topic, length)
         file = File("bs.txt", StringIO(data)) if len(data) > 1950 else None
         await ctx.send(
-            f"我幫你唬爛了關於 {topic} 的 {len(data)} 字文章！{f'{newline}{newline}{data}' if not file else ''}",
+            f"我幫你唬爛了關於 {topic} 的 {len(data)} 字文章！{'' if file else f'{newline}{newline}{data}'}",
             files=file,
         )
 
@@ -92,8 +92,7 @@ class generate(Extension):
     async def faketweet(self, ctx: CommandContext, username: str, text: str):
         """發出假的推文"""
         await ctx.defer()
-        if username.startswith("@"):
-            username = username[1:]
+        username = username.removeprefix("@")
         url = await api_request(
             f"https://nekobot.xyz/api/imagegen?type=tweet&username={username}&text={text}"
         )

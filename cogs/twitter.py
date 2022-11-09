@@ -58,8 +58,7 @@ def markdown(content):
 
 
 def get_post_id(content):
-    matchs = TWITTER_URL_REGEX.search(content)
-    if matchs:
+    if matchs := TWITTER_URL_REGEX.search(content):
         return matchs.group().split("/")[-1]
     return None
 
@@ -92,8 +91,7 @@ class twitter(PersistenceExtension):
             self.client, Message, object_id=reaction.message_id, parent_id=reaction.channel_id
         )
         if msg.content:
-            id = get_post_id(msg.content)
-            if id:
+            if id := get_post_id(msg.content):
                 document = await self.db.connected.find_one(filter={"_id": int(reaction.user_id)})
                 if not document:
                     return await msg.remove_reaction_from(reaction.emoji, reaction.user_id)
@@ -159,8 +157,7 @@ class twitter(PersistenceExtension):
             self.client, Message, object_id=reaction.message_id, parent_id=reaction.channel_id
         )
         if msg.content:
-            id = get_post_id(msg.content)
-            if id:
+            if id := get_post_id(msg.content):
                 document = await self.db.connected.find_one(filter={"_id": int(reaction.user_id)})
                 if not document:
                     return
@@ -228,12 +225,12 @@ class twitter(PersistenceExtension):
                 f"請點擊[此連結](<https://service.itsrqtl.repl.co/link?code={code}>)進行連結\n輸入密碼時，請確保網域為twitter.com喔！",
                 ephemeral=True,
             )
-        elif not twitter and pending:
+        elif not twitter:
             await ctx.send(
                 f"請點擊[此連結](<https://service.itsrqtl.repl.co/link?code={pending['code']}>)進行連結\n輸入密碼時，請確保網域為twitter.com喔！",
                 ephemeral=True,
             )
-        elif twitter:
+        else:
             resp = (
                 await self.tw.get_user(id=twitter["tid"], user_fields=["username"])
             ).data.username
@@ -271,23 +268,21 @@ class twitter(PersistenceExtension):
         """尋找Twitter使用者資料"""
         if not re.compile(r"^@?(\w){1,15}$").match(username):
             return await ctx.send(":x: baka Twitter使用者名稱格式錯誤啦！", ephemeral=True)
-        else:
-            if username.startswith("@"):
-                username = username[1:]
-            lookup = await self.tw.get_user(
-                username=username,
-                user_fields=[
-                    "created_at",
-                    "description",
-                    "id",
-                    "profile_image_url",
-                    "protected",
-                    "public_metrics",
-                    "verified",
-                    "name",
-                    "username",
-                ],
-            )
+        username = username.removeprefix("@")
+        lookup = await self.tw.get_user(
+            username=username,
+            user_fields=[
+                "created_at",
+                "description",
+                "id",
+                "profile_image_url",
+                "protected",
+                "public_metrics",
+                "verified",
+                "name",
+                "username",
+            ],
+        )
         if not lookup.data:
             return await ctx.send(":x: baka 找不到Twitter使用者啦！", ephemeral=True)
         await ctx.defer()
@@ -404,7 +399,7 @@ class twitter(PersistenceExtension):
             if resp["data"]["following"]:
                 await ctx.message.disable_all_components()
                 return await ctx.send("跟隨使用者了！")
-            elif not resp["data"]["following"] and resp["data"]["pending_follow"]:
+            elif resp["data"]["pending_follow"]:
                 await ctx.message.disable_all_components()
                 return await ctx.send("發出跟隨請求了！")
             else:
@@ -435,17 +430,17 @@ class twitter(PersistenceExtension):
             if not re.compile(r"^@?(\w){1,15}$").match(user):
                 return await ctx.send(":x: baka Twitter使用者名稱格式錯誤啦！", ephemeral=True)
             else:
-                if user.startswith("@"):
-                    user = user[1:]
+                user = user.removeprefix("@")
         if hashtag:
             hashtag = [i[1:] if i.startswith("#") else i for i in hashtag.split(" ")]
         tweets = await self.tw.search_recent_tweets(
-            query=f"""{f"{query} " if query else ''}{f'from:{user} ' if user else ''}{f"#{' #'.join(hashtag)} " if hashtag else ''}{"-is:reply " if not reply else ''}-is:retweet""",
+            query=f"""{f"{query} " if query else ''}{f'from:{user} ' if user else ''}{f"#{' #'.join(hashtag)} " if hashtag else ''}{'' if reply else "-is:reply "}-is:retweet""",
             tweet_fields=["author_id", "created_at", "text"],
             user_fields=["name", "username"],
             expansions=["author_id"],
             sort_order="recency",
         )
+
         if not tweets.data:
             return await ctx.send(":x: 我找不到相關的推文！", ephemeral=True)
         await ctx.defer()
