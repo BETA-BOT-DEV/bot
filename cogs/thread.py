@@ -11,6 +11,7 @@
 #                   |___||__| /____  >|____|_  /\__   | |__| |____/
 #                                  \/        \/    |__|
 
+import contextlib
 import os
 
 from interactions import (
@@ -41,10 +42,8 @@ class thread(Extension):
 
     @extension_listener
     async def on_thread_create(self, thread: Thread):
-        try:
+        with contextlib.suppress(LibraryException):
             await thread.join()
-        except LibraryException:
-            pass
 
     @extension_command(default_member_permissions=Permissions.MANAGE_THREADS)
     async def thread(self, *args, **kwargs):

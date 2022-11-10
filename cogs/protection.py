@@ -15,7 +15,7 @@ import binascii
 import os
 import re
 from base64 import b64decode
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 import aiohttp
@@ -82,8 +82,7 @@ class protect(Extension):
     @extension_listener(name="on_message_create")
     async def link_check(self, message: Message):
         if message.content:
-            linklist = url_regex.findall(message.content)
-            if linklist:
+            if linklist := url_regex.findall(message.content):
                 # api lookup
                 async with aiohttp.ClientSession() as s, s.post(
                     f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={decouple.config('googleapi')}",
@@ -101,7 +100,7 @@ class protect(Extension):
                                 "platformTypes": ["ANY_PLATFORM"],
                                 "threatEntryTypes": ["URL"],
                                 "threatEntries": [
-                                    {"url": i} for i in [*set(["".join(i) for i in linklist])]
+                                    {"url": i} for i in [*{"".join(i) for i in linklist}]
                                 ],
                             },
                         }
@@ -122,18 +121,18 @@ class protect(Extension):
                                 for i in resp["matches"]
                             ],
                             footer=EmbedFooter(text="Google Safe Browsing API"),
-                            timestamp=datetime.utcnow(),
+                            timestamp=datetime.now(timezone.utc),
                         )
                     )
 
     @extension_listener(name="on_message_create")
     async def token_check(self, message: Message):
-        possible = [
-            i
-            for i in re.findall(
+        possible = list(
+            re.findall(
                 r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27,}", message.content
             )
-        ]
+        )
+
         for token in possible:
             try:
                 validate = b64decode(token.split(".")[0] + "==", validate=True)
@@ -179,9 +178,8 @@ class protect(Extension):
             Permissions.MENTION_EVERYONE in permissions or message.author.id == guild.owner_id
         ):
             for i in guild.members:
-                if not i.user.bot and i.user.id != message.author.id:
-                    if int(i.id) not in pinged:
-                        pinged.append(int(i.id))
+                if not i.user.bot and i.user.id != message.author.id and int(i.id) not in pinged:
+                    pinged.append(int(i.id))
         if message.mentions:
             for i in message.mentions:
                 if (

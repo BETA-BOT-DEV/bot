@@ -12,7 +12,7 @@
 #                                  \/        \/    |__|
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from interactions import (
     Choice,
@@ -146,7 +146,7 @@ class moderate(Extension):
             await member.modify(
                 ctx.guild_id,
                 reason=reason,
-                communication_disabled_until=(datetime.utcnow() + length).isoformat(),
+                communication_disabled_until=(datetime.now(timezone.utc) + length).isoformat(),
             )
         except LibraryException:
             return await ctx.send(f":x: 我禁言不了 {member.mention} ;-;", ephemeral=True)

@@ -13,7 +13,7 @@
 
 import os
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from random import choice, randint
 from urllib.parse import quote_plus
@@ -202,9 +202,7 @@ class fun(PersistenceExtension):
             [board[0][0], board[1][1], board[2][2]],
             [board[2][0], board[1][1], board[0][2]],
         ]
-        if [player, player, player] in wincond:
-            return True
-        return False
+        return [player, player, player] in wincond
 
     def build_board(self, current=None, update=None):
         p1win = False
@@ -352,10 +350,10 @@ class fun(PersistenceExtension):
         await ctx.get_guild()
         ext = "gif" if match[0][0] == "a" else "png"
         name = match[0][1]
-        id = int(match[0][2])
-        if id in [int(e.id) for e in ctx.guild.emojis]:
+        _id = int(match[0][2])
+        if _id in [int(e.id) for e in ctx.guild.emojis]:
             return await ctx.send(":x: baka 這個伺服器已經有這個表情符號了啦！")
-        url = f"https://cdn.discordapp.com/emojis/{id}.{ext}"
+        url = f"https://cdn.discordapp.com/emojis/{_id}.{ext}"
         img = await requset_raw_img(url)
         if not img:
             return await ctx.send(":x: baka 這個表情符號不存在啦！")
@@ -398,7 +396,7 @@ class fun(PersistenceExtension):
                         EmbedField(name="原文", value=text, inline=False),
                         EmbedField(
                             name="翻譯",
-                            value=resp if len(resp) <= 1024 else resp[:1021] + "...",
+                            value=resp if len(resp) <= 1024 else f"{resp[:1021]}...",
                             inline=False,
                         ),
                     ],
@@ -455,7 +453,7 @@ class fun(PersistenceExtension):
                         EmbedField(name="原文", value=text, inline=False),
                         EmbedField(
                             name="翻譯",
-                            value=resp if len(resp) <= 1024 else resp[:1021] + "...",
+                            value=resp if len(resp) <= 1024 else f"{resp[:1021]}...",
                             inline=False,
                         ),
                     ],
@@ -492,7 +490,7 @@ class fun(PersistenceExtension):
         await ctx.send(
             embeds=Embed(
                 title=f"{resp['data']['Media']['title']['native']}",
-                description=f"中文標題: {resp['data']['Media']['title']['chinese'] if resp['data']['Media']['title']['chinese'] else '未知'}{newline}集數: {url['result'][0]['episode'] if url['result'][0]['episode'] else '未知/無'}{newline}時間: {timedelta(seconds=int(url['result'][0]['from']))} - {timedelta(seconds=int(url['result'][0]['to']))}{newline}相似度: {url['result'][0]['similarity'] * 100:.2f}%",
+                description=f"中文標題: {resp['data']['Media']['title']['chinese'] or '未知'}{newline}集數: {url['result'][0]['episode'] or '未知/無'}{newline}時間: {timedelta(seconds=int(url['result'][0]['from']))} - {timedelta(seconds=int(url['result'][0]['to']))}{newline}相似度: {url['result'][0]['similarity'] * 100:.2f}%",
                 image=EmbedImageStruct(url="attachment://preview.jpg"),
                 footer=EmbedFooter(text="資料由 trace.moe 提供"),
                 url=resp["data"]["Media"]["siteUrl"],
@@ -565,7 +563,7 @@ class fun(PersistenceExtension):
                 ref = await get(
                     self.client, Message, object_id=int(reply), parent_id=ctx.channel_id
                 )
-            except:  # noqa: E722
+            except Exception:
                 return await ctx.send(":x: 我找不到要回覆的訊息喔！", ephemeral=True)
             msg = await ref.reply(
                 embeds=raweb(
@@ -590,16 +588,16 @@ class fun(PersistenceExtension):
                 "_id": int(msg.id),
                 "user": int(ctx.user.id),
                 "guild": int(ctx.guild.id),
-                "expires": datetime.utcnow() + timedelta(days=7),
+                "expires": datetime.now(timezone.utc) + timedelta(days=7),
             }
         )
 
     @extension_command(dm_permission=False, default_member_permissions=Permissions.ADMINISTRATOR)
     @option("要查詢的訊息 ID")
-    async def whosay(self, ctx: CommandContext, msg_id: str):
+    async def whosay(self, ctx: CommandContext, msg_id: int):
         """查詢是誰讓我說話"""
         await ctx.defer(ephemeral=True)
-        data = await self._say.find_one({"_id": int(msg_id)})
+        data = await self._say.find_one({"_id": msg_id})
         if not data:
             return await ctx.send(":x: 這句話不是別人要我說的喔！又或者我已經忘掉了(只能尋找7天以內的訊息)...")
         elif data["guild"] != int(ctx.guild.id):

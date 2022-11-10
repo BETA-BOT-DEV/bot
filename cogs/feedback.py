@@ -12,7 +12,7 @@
 #                                  \/        \/    |__|
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 import aiosqlite
 from interactions import (
@@ -302,7 +302,7 @@ class feedback(PersistenceExtension):
                     EmbedField(name="內容", value=content, inline=False),
                 ],
                 color=color,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             ),
             components=components,
         )
@@ -424,7 +424,7 @@ class feedback(PersistenceExtension):
             else:
                 await db.execute(
                     "INSERT INTO feedback_blocked (`user`, `time`) VALUES (?, ?)",
-                    (package[0], datetime.utcnow()),
+                    (package[0], datetime.now(timezone.utc)),
                 )
                 await db.commit()
                 await ctx.edit("已封鎖使用者！", components=[])

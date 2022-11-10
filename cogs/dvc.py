@@ -59,7 +59,7 @@ class dvc(PersistenceExtension):
                 g = await get(self.client, Guild, object_id=after.guild_id)
                 name = document["format"].replace("{{MEMBER}}", after.member.name)
                 c = await g.create_channel(
-                    name if len(name) <= 32 else name[:29] + "...",
+                    name if len(name) <= 32 else f"{name[:29]}...",
                     type=ChannelType.GUILD_VOICE,
                     parent_id=int(document["category"]),
                 )
@@ -80,7 +80,7 @@ class dvc(PersistenceExtension):
                     if (
                         channel.parent_id
                         and int(channel.parent_id) == document["category"]
-                        and not int(channel.id) == document["lobby"]
+                        and int(channel.id) != document["lobby"]
                     ):
                         await channel.delete()
 

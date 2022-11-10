@@ -67,10 +67,7 @@ class typing(Extension):
     )
     async def start(self, ctx: CommandContext, channel: Channel = None):
         """讓我開始打字"""
-        if not channel:
-            channel = int(ctx.channel_id)
-        else:
-            channel = int(channel.id)
+        channel = int(channel.id) if channel else int(ctx.channel_id)
         async with aiofiles.open("./storage/typing.txt", "r") as f:
             data = await f.read()
         if str(channel) in data:
@@ -80,7 +77,7 @@ class typing(Extension):
             self._channels.append(channel)
             async with aiofiles.open("./storage/typing.txt", "a") as f:
                 await f.write(f"{channel}\n")
-        await self.client._http.trigger_typing(int(channel))
+        await self.client._http.trigger_typing(channel)
 
     @typing.subcommand()
     @option(
@@ -96,10 +93,7 @@ class typing(Extension):
     )
     async def stop(self, ctx: CommandContext, channel: Channel = None):
         """讓我停止打字"""
-        if not channel:
-            channel = int(ctx.channel_id)
-        else:
-            channel = int(channel.id)
+        channel = int(channel.id) if channel else int(ctx.channel_id)
         async with aiofiles.open("./storage/typing.txt", "r") as f:
             data = await f.read()
         if str(channel) not in data:

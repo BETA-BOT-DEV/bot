@@ -120,9 +120,7 @@ class poll(PersistenceExtension):
             description="請確認以下設定是否正確",
             fields=[
                 EmbedField(name="問題", value=question, inline=False),
-                EmbedField(
-                    name="描述", value=description if description else "*[沒有填寫]*", inline=False
-                ),
+                EmbedField(name="描述", value=description or "*[沒有填寫]*", inline=False),
                 EmbedField(
                     name="選項",
                     value="".join([f"{i+1}. {v}\n" for i, v in enumerate(oplist)]),
@@ -299,7 +297,7 @@ class poll(PersistenceExtension):
     ):
         oplist = options.split(",") if options and "," in options else ["是", "否"]
         ctx.message.embeds[0].fields[0].value = question
-        ctx.message.embeds[0].fields[1].value = description if description else "*[沒有填寫]*"
+        ctx.message.embeds[0].fields[1].value = description or "*[沒有填寫]*"
         ctx.message.embeds[0].fields[2].value = "".join(
             [f"{i+1}. {v}\n" for i, v in enumerate(oplist)]
         )

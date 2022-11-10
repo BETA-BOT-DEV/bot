@@ -14,7 +14,7 @@
 import os
 import sys
 import tracemalloc
-from datetime import datetime
+from datetime import datetime, timezone
 from random import randint
 
 import interactions
@@ -174,7 +174,7 @@ class general(Extension):
                     ),
                     EmbedField(
                         name="**伺服器加成**",
-                        value=f"數量: {ctx.guild.premium_subscription_count if ctx.guild.premium_subscription_count else 0}\n等級: {ctx.guild.premium_tier if ctx.guild.premium_tier else 0}",
+                        value=f"數量: {ctx.guild.premium_subscription_count or 0}\n等級: {ctx.guild.premium_tier or 0}",
                         inline=True,
                     ),
                     # EmbedField(
@@ -209,7 +209,7 @@ class general(Extension):
     @_bot.subcommand(name="status")
     async def bot_status(self, ctx: CommandContext):
         """查看我的狀態"""
-        callback_time = datetime.utcnow()
+        callback_time = datetime.now(timezone.utc)
         await ctx.defer()
         channels = 0
         users = 0

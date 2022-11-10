@@ -28,7 +28,7 @@ logger.add(
     "./logs/{time:YYYY-MM-DD_HH-mm-ss_SSS!UTC}.log",
     rotation=time(
         math.trunc(server_offset) if server_offset >= 0 else 24 + math.trunc(server_offset),
-        int(server_offset * 4 % 4 * 15) if not server_offset.is_integer() else 0,
+        0 if server_offset.is_integer() else int(server_offset * 4 % 4 * 15),
         0,
         0,
     ),
@@ -86,7 +86,7 @@ def raweb(
         description=desc,
         image=image,
         footer=footer,
-        color=color if color else randint(0, 0xFFFFFF),
+        color=color or randint(0, 0xFFFFFF),
     )
 
 
@@ -108,9 +108,7 @@ async def request_img(url: str):
 
 async def requset_raw_img(url: str):
     async with aiohttp.ClientSession() as s, s.get(url) as r:
-        if r.status == 404:
-            return None
-        return await r.content.read()
+        return None if r.status == 404 else await r.content.read()
 
 
 async def translate(text: str, target: str, source: str = ""):
@@ -120,15 +118,15 @@ async def translate(text: str, target: str, source: str = ""):
         data={"text": text, "target_lang": target, "source_lang": source},
     ) as r:
         if r.status not in [429, 456]:
+            if "translations" not in (j := await r.json()):
+                return r.status, None
             used, limit = await translator_quota()
             log = f"Translated {len(text)} words. DeepL quota: {used}/{limit} ({used/limit*100}%)"
             if used / limit > 0.9:
                 logger.warning(log)
             else:
                 logger.info(log)
-            return (j := await r.json())["translations"][0]["text"], j["translations"][0][
-                "detected_source_language"
-            ]
+            return j["translations"][0]["text"], j["translations"][0]["detected_source_language"]
         if r.status == 429:
             logger.warning(f"DeepL rate limit exceeded while translating {len(text)} words.")
         elif r.status == 456:

@@ -47,7 +47,7 @@ from utils import logger
 # create the bot instance
 logger.info("Initializing discord client.")
 client = VoiceClient(
-    token=config("dev"),  # change this to "token" if deploying on production server
+    token=config("token"),  # change this to "token" if deploying on production server
     intents=Intents.ALL,
 )
 setup(client)
@@ -170,10 +170,10 @@ def markdown(content):
 async def on_command_error(ctx: CommandContext, error: Exception):
     try:
         raise error
-    except:  # noqa: E722
+    except Exception:
         tb = f"Traceback: \n```{markdown(traceback.format_exc())}```"
     if len(tb) > 4096:
-        tb = tb[:4090] + "...```"
+        tb = f"{tb[:4090]}...```"
     msg = error.args[0].replace("\n  ", "\n") or "Unknown error."
     await Channel(
         **await client._http.create_dm(recipient_id=int(client.me.owner.id)), _client=client._http
