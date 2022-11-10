@@ -151,7 +151,7 @@ nsfw_select = ActionRow(
 )
 nsfw_embed = raweb(
     "NSFW指令",
-    "這裡是可以色色的指令的說明。\n你可以使用下面的選單來瀏覽幫助頁面。\n\n**注意：** 這些指令只能在 NSFW 頻道使用。同時，這些指令預設需要管理員權限，管理員可以前往 **伺服器設定 -> 整合-> BETA BOT** 中修改。\n\n如果你想提出建議或是回報問題，請使用 `/feedback` 指令。",
+    "這裡是可以色色的指令的說明。\n你可以使用下面的選單來瀏覽幫助頁面。\n\n**注意：** 這些指令只能在 NSFW 頻道使用。如果你看不到這些指令，請前往 **設定 --> 私隱 & 安全** 打開 顯示限制級指令 選項。同時，這些指令預設需要管理員權限，管理員可以前往 **伺服器設定 -> 整合-> BETA BOT** 中修改。\n\n如果你想提出建議或是回報問題，請使用 `/feedback` 指令。",
 )
 admin_select = ActionRow(
     components=[
@@ -188,7 +188,7 @@ def _command(name, description: str = "", usage: str = "", example: str = "", ns
         example = "我的主人很懶，沒有留下使用範例。"
     return raweb(
         name,
-        f"{description}\n\n**使用方法**\n```{usage}```\n\n**範例**\n```{example}```\n\n{'' if not nsfw else '⚠️ 這個指令可能會有成人內容，請注意。'}",
+        f"{description}\n\n**使用方法**\n```{usage}```\n\n**範例**\n```{example}```\n\n{'⚠️ 這個指令可能會有成人內容，請注意。' if nsfw else ''}",
     )
 
 
