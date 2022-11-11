@@ -129,7 +129,7 @@ class sfw(Extension):
                 )
             case 1:
                 url = await api_request("https://nekos.life/api/v2/img/meow")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url[0]["url"])))
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url[0]["url"] or url["url"])))
 
     @image.subcommand()
     async def dog(self, ctx: CommandContext):
