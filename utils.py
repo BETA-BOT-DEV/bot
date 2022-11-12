@@ -103,10 +103,10 @@ async def api_request(url: str, headers: dict = None):
 
 async def request_img(url: str):
     async with aiohttp.ClientSession() as s, s.get(url) as r:
-        return BytesIO(await r.content.read())
+        return None if r.status == 404 else BytesIO(await r.content.read())
 
 
-async def requset_raw_img(url: str):
+async def request_raw_image(url: str):
     async with aiohttp.ClientSession() as s, s.get(url) as r:
         return None if r.status == 404 else await r.content.read()
 
