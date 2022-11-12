@@ -35,6 +35,7 @@ from interactions import (
     EmbedImageStruct,
     File,
     Image,
+    LibraryException,
     Message,
     OptionType,
     Permissions,
@@ -54,7 +55,7 @@ from interactions.ext.persistence import (
 )
 from loguru._logger import Logger
 
-from utils import api_request, lengthen_url, raweb, requset_raw_img, translate
+from utils import api_request, lengthen_url, raweb, request_raw_image, translate
 
 newline = "\n"
 
@@ -354,10 +355,15 @@ class fun(PersistenceExtension):
         if _id in [int(e.id) for e in ctx.guild.emojis]:
             return await ctx.send(":x: baka 這個伺服器已經有這個表情符號了啦！")
         url = f"https://cdn.discordapp.com/emojis/{_id}.{ext}"
-        img = await requset_raw_img(url)
+        img = await request_raw_image(url)
         if not img:
             return await ctx.send(":x: baka 這個表情符號不存在啦！")
-        result = await ctx.guild.create_emoji(image=Image(file=f"{name}.{ext}", fp=img), name=name)
+        try:
+            result = await ctx.guild.create_emoji(
+                image=Image(file=f"{name}.{ext}", fp=img), name=name
+            )
+        except LibraryException:
+            return await ctx.send(":x: 我無法將這個表情符號新增到這個伺服器！\n(可能是因為我沒有權限，或者是這個伺服器的表情符號數量已達上限)")
         await ctx.send(f"成功偷取表情符號 {result}！")
 
     @extension_command()
@@ -406,6 +412,39 @@ class fun(PersistenceExtension):
                     ),
                 )
             )
+
+    @extension_message_command(
+        name="偷取貼圖", default_member_permissions=Permissions.MANAGE_EMOJIS_AND_STICKERS
+    )
+    async def steal_sticker(self, ctx: CommandContext):
+        await ctx.defer(ephemeral=True)
+        if not ctx.target.sticker_items:
+            return await ctx.send(":x: baka 這個訊息沒有貼圖啦！")
+        if ctx.target.sticker_items[0].format_type == 3:
+            return await ctx.send(":x: baka 你只能偷取自訂貼圖啦！(無法偷取 LOTTIE 格式的貼圖)")
+        await ctx.get_guild()
+        image = await request_raw_image(
+            f"https://media.discordapp.net/stickers/{ctx.target.sticker_items[0].id}.png"
+        )
+        if not image:
+            return await ctx.send(":x: baka 你只能偷取自訂貼圖啦！")
+        try:
+            # FIXME: This version of the lib will cause an error when creating a sticker, therefore doing it manually
+            data = aiohttp.FormData()
+            data.add_field("file", image, filename="sticker.png", content_type="image/png")
+            data.add_field("name", ctx.target.sticker_items[0].name)
+            data.add_field("tags", ctx.target.sticker_items[0].name.split(" ")[0])
+            async with aiohttp.ClientSession() as s, s.post(
+                f"https://discord.com/api/v10/guilds/{ctx.guild_id}/stickers",
+                headers={"Authorization": f"Bot {self.client._token}"},
+                data=data,
+            ) as r:
+                result = await r.json()
+                if "message" in result:
+                    raise LibraryException(code=13)
+        except LibraryException:
+            return await ctx.send(":x: 我無法將這個貼圖新增到這個伺服器！\n(可能是因為我沒有權限，或者是這個伺服器的貼圖數量已達上限)")
+        await ctx.send("成功偷取貼圖！")
 
     @extension_message_command(name="翻譯文字")
     async def message_translate(self, ctx: CommandContext):
