@@ -11,6 +11,7 @@
 #                   |___||__| /____  >|____|_  /\__   | |__| |____/
 #                                  \/        \/    |__|
 
+import contextlib
 import os
 
 import aiofiles
@@ -20,8 +21,10 @@ from interactions import (
     Client,
     CommandContext,
     Extension,
+    Member,
     Permissions,
     extension_command,
+    get,
     option,
 )
 from interactions.ext.tasks import IntervalTrigger, create_task
@@ -47,7 +50,8 @@ class typing(Extension):
                 data = await f.read()
                 self._channels = [int(i) for i in data.split(newline) if i != ""]
         for i in self._channels:
-            await self.client._http.trigger_typing(int(i))
+            with contextlib.suppress(Exception):
+                await self.client._http.trigger_typing(int(i))
 
     @extension_command(default_member_permissions=Permissions.MANAGE_CHANNELS, dm_permission=False)
     async def typing(self, *args, **kwargs):
@@ -67,17 +71,22 @@ class typing(Extension):
     )
     async def start(self, ctx: CommandContext, channel: Channel = None):
         """讓我開始打字"""
-        channel = int(channel.id) if channel else int(ctx.channel_id)
+        await ctx.defer(ephemeral=True)
+        bot = await get(self.client, Member, object_id=self.client.me.id, parent_id=ctx.guild_id)
+        if not channel:
+            channel = await ctx.get_channel()
         async with aiofiles.open("./storage/typing.txt", "r") as f:
             data = await f.read()
-        if str(channel) in data:
+        if str(channel.id) in data:
             await ctx.send(":x: baka 我已經在這個頻道輸入中...", ephemeral=True)
-        else:
-            await ctx.send(f"好了！我會在 <#{channel}> 開始輸入...", ephemeral=True)
-            self._channels.append(channel)
+        elif await channel.get_permissions_for(bot) & Permissions.SEND_MESSAGES:
+            await ctx.send(f"好了！我會在 {channel.mention} 開始輸入...", ephemeral=True)
+            self._channels.append(int(channel.id))
             async with aiofiles.open("./storage/typing.txt", "a") as f:
-                await f.write(f"{channel}\n")
-        await self.client._http.trigger_typing(channel)
+                await f.write(f"{channel.id}\n")
+        else:
+            await ctx.send(":x: baka 我沒有權限在那個頻道輸入...", ephemeral=True)
+        await self.client._http.trigger_typing(channel.id)
 
     @typing.subcommand()
     @option(
