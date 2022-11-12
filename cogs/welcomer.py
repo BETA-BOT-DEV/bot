@@ -61,9 +61,9 @@ def parse_embed(embed: Embed, default="", mode="welcome"):
     embed_color = embed.fields[5].value if embed.fields[5].value != "*沒有設定*" else default
     if mode == "welcome":
         role = embed.fields[6].value if embed.fields[6].value != "*沒有設定*" else default
-        return (channel, content, embed_title, embed_description, embed_color, embed_footer, role)
+        return (channel, content, embed_title, embed_description, embed_footer, embed_color, role)
     elif mode == "farewell":
-        return (channel, content, embed_title, embed_description, embed_color, embed_footer)
+        return (channel, content, embed_title, embed_description, embed_footer, embed_color)
 
 
 class welcomer(PersistenceExtension):
@@ -84,7 +84,7 @@ class welcomer(PersistenceExtension):
             try:
                 channel = await get(self.client, Channel, object_id=document["channel"])
                 guild = await get(self.client, Guild, object_id=int(member.guild_id))
-            except:  # noqa: E722
+            except Exception:
                 return
             content, ebdesc = (
                 i.replace("{mention}", member.mention)
@@ -121,7 +121,7 @@ class welcomer(PersistenceExtension):
                 role = await get(self.client, Role, object_id=document["role"], parent_id=guild.id)
                 try:
                     await member.add_role(role)
-                except:  # noqa: E722
+                except Exception:
                     return
 
     @extension_listener()
@@ -131,7 +131,7 @@ class welcomer(PersistenceExtension):
             try:
                 channel = await get(self.client, Channel, object_id=document["channel"])
                 guild = await get(self.client, Guild, object_id=int(member.guild_id))
-            except:  # noqa: E722
+            except Exception:
                 return
             content, ebtitle, ebdesc, ebfooter = (
                 i.replace("{user}", member.user.username)
@@ -559,24 +559,28 @@ class welcomer(PersistenceExtension):
     async def farewell(self, ctx: CommandContext):
         """設定離開訊息"""
         document = await self._farewell.find_one({"_id": int(ctx.guild_id)})
-        channel = (
-            "*沒有設定*" if not (document and document["channel"]) else f"<#{document['channel']}>"
-        )
-        content = "*沒有設定*" if not (document and document["message"]) else document["message"]
+        channel = f"<#{document['channel']}>" if (document and document["channel"]) else "*沒有設定*"
+
+        content = document["message"] if (document and document["message"]) else "*沒有設定*"
+
         embed_title = (
-            "*沒有設定*" if not (document and document["embed_title"]) else document["embed_title"]
+            document["embed_title"] if (document and document["embed_title"]) else "*沒有設定*"
         )
+
         embed_description = (
-            "*沒有設定*"
-            if not (document and document["embed_description"])
-            else document["embed_description"]
+            document["embed_description"]
+            if (document and document["embed_description"])
+            else "*沒有設定*"
         )
+
         embed_footer = (
-            "*沒有設定*" if not (document and document["embed_footer"]) else document["embed_footer"]
+            document["embed_footer"] if (document and document["embed_footer"]) else "*沒有設定*"
         )
+
         embed_color = (
-            "*沒有設定*" if not (document and document["embed_color"]) else document["embed_color"]
+            document["embed_color"] if (document and document["embed_color"]) else "*沒有設定*"
         )
+
         components = [
             ActionRow(
                 components=[
@@ -654,17 +658,17 @@ class welcomer(PersistenceExtension):
             for i in [1, 2, 3, 4]
         )
         await ctx.send(
-            content=f"離開訊息的預覽來了！\n\n{content if content else ''}",
-            embeds=[]
-            if not (ebtitle or ebdesc)
-            else [
+            content=f"離開訊息的預覽來了！\n\n{content or ''}",
+            embeds=[
                 Embed(
                     title=ebtitle,
                     description=ebdesc,
                     footer=EmbedFooter(text=ebfooter) if ebfooter else None,
-                    color=settings[5] if settings[5] else 0x000000,
+                    color=settings[5] or 0x000000,
                 )
-            ],
+            ]
+            if (ebtitle or ebdesc)
+            else [],
             ephemeral=True,
         )
 
@@ -892,11 +896,11 @@ class welcomer(PersistenceExtension):
             if i > 0xFFFFFF or i < 0:
                 return await ctx.send(":x: baka 你的嵌入顏色不正確喔！", ephemeral=True)
         msg = await get(self.client, Message, object_id=package, parent_id=ctx.channel_id)
-        msg.embeds[0].fields[1].value = content if content else "*沒有設定*"
-        msg.embeds[0].fields[2].value = embed_title if embed_title else "*沒有設定*"
-        msg.embeds[0].fields[3].value = embed_description if embed_description else "*沒有設定*"
-        msg.embeds[0].fields[4].value = embed_footer if embed_footer else "*沒有設定*"
-        msg.embeds[0].fields[5].value = embed_color if embed_color else "*沒有設定*"
+        msg.embeds[0].fields[1].value = content or "*沒有設定*"
+        msg.embeds[0].fields[2].value = embed_title or "*沒有設定*"
+        msg.embeds[0].fields[3].value = embed_description or "*沒有設定*"
+        msg.embeds[0].fields[4].value = embed_footer or "*沒有設定*"
+        msg.embeds[0].fields[5].value = embed_color or "*沒有設定*"
         await msg.edit(embeds=msg.embeds, components=msg.components)
         await ctx.send("我會把設定記住的！", ephemeral=True)
 

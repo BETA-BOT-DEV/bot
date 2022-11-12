@@ -47,7 +47,7 @@ from utils import logger
 # create the bot instance
 logger.info("Initializing discord client.")
 client = VoiceClient(
-    token=config("token"),  # change this to "token" if deploying on production server
+    token=config("dev"),  # change this to "token" if deploying on production server
     intents=Intents.ALL,
 )
 setup(client)
@@ -174,7 +174,9 @@ async def on_command_error(ctx: CommandContext, error: Exception):
         tb = f"Traceback: \n```{markdown(traceback.format_exc())}```"
     if len(tb) > 4096:
         tb = f"{tb[:4090]}...```"
-    msg = error.args[0].replace("\n  ", "\n") or "Unknown error."
+    msg = error.args[0] or "Unknown error."
+    if isinstance(msg, str):
+        msg = msg.replace("\n  ", "\n")
     await Channel(
         **await client._http.create_dm(recipient_id=int(client.me.owner.id)), _client=client._http
     ).send(

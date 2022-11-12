@@ -87,7 +87,7 @@ class general(Extension):
                     EmbedField(name="**NSFW**", value="是" if channel.nsfw else "否", inline=True),
                     EmbedField(
                         name="**創建時間**",
-                        value=f"<t:{round(channel.id.timestamp.timestamp())}:F> (<t:{round(channel.id.timestamp.timestamp())}:R>)",
+                        value=f"<t:{round(channel.id.timestamp.replace(tzinfo=timezone.utc).timestamp())}:F> (<t:{round(channel.id.timestamp.replace(tzinfo=timezone.utc).timestamp())}:R>)",
                         inline=True,
                     ),
                 ],
@@ -116,7 +116,7 @@ class general(Extension):
                     EmbedField(name="**機器人**", value="是" if user.bot else "否", inline=False),
                     EmbedField(
                         name="**創建時間**",
-                        value=f"<t:{round(user.id.timestamp.timestamp())}:F> (<t:{round(user.id.timestamp.timestamp())}:R>)",
+                        value=f"<t:{round(user.id.timestamp.replace(tzinfo=timezone.utc).timestamp())}:F> (<t:{round(user.id.timestamp.replace(tzinfo=timezone.utc).timestamp())}:R>)",
                         inline=True,
                     ),
                 ],
@@ -184,7 +184,7 @@ class general(Extension):
                     # ),
                     EmbedField(
                         name="**創建時間**",
-                        value=f"<t:{round(ctx.guild.id.timestamp.timestamp())}:F> (<t:{round(ctx.guild.id.timestamp.timestamp())}:R>)",
+                        value=f"<t:{round(ctx.guild.id.timestamp.replace(tzinfo=timezone.utc).timestamp())}:F> (<t:{round(ctx.guild.id.timestamp.replace(tzinfo=timezone.utc).timestamp())}:R>)",
                         inline=True,
                     ),
                 ],
@@ -209,7 +209,7 @@ class general(Extension):
     @_bot.subcommand(name="status")
     async def bot_status(self, ctx: CommandContext):
         """查看我的狀態"""
-        callback_time = datetime.now(timezone.utc)
+        callback_time = datetime.utcnow()  # sourcery skip: aware-datetime-for-utc
         await ctx.defer()
         channels = 0
         users = 0
@@ -254,7 +254,7 @@ class general(Extension):
                     EmbedField(name="**機器人**", value="是" if user.bot else "否", inline=False),
                     EmbedField(
                         name="**創建時間**",
-                        value=f"<t:{round(user.id.timestamp.timestamp())}:F> (<t:{round(user.id.timestamp.timestamp())}:R>)",
+                        value=f"<t:{round(user.id.timestamp.replace(tzinfo=timezone.utc).timestamp())}:F> (<t:{round(user.id.timestamp.replace(tzinfo=timezone.utc).timestamp())}:R>)",
                         inline=True,
                     ),
                 ],

@@ -312,7 +312,7 @@ class twitter(PersistenceExtension):
                     ),
                     EmbedField(
                         name="創建時間",
-                        value=f"<t:{round(lookup.data.created_at.timestamp())}:R>",
+                        value=f"<t:{round(lookup.data.created_at.replace(tzinfo=datetime.timezone.utc).timestamp())}:R>",
                         inline=True,
                     ),
                     EmbedField(

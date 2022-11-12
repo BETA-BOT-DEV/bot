@@ -127,9 +127,11 @@ class sfw(Extension):
                 url = await api_request(
                     "https://api.thecatapi.com/v1/images/search", {"x-api-key": config("thecatapi")}
                 )
+                url = url[0]["url"]
             case 1:
                 url = await api_request("https://nekos.life/api/v2/img/meow")
-        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url[0]["url"] or url["url"])))
+                url = url["url"]
+        await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url)))
 
     @image.subcommand()
     async def dog(self, ctx: CommandContext):

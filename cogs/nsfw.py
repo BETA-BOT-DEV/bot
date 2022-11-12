@@ -19,7 +19,6 @@ from interactions import (
     CommandContext,
     EmbedImageStruct,
     Extension,
-    Permissions,
     extension_command,
 )
 from loguru._logger import Logger
@@ -35,7 +34,7 @@ class nsfw(Extension):
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )
 
-    @extension_command(nsfw=True, default_member_permissions=Permissions.ADMINISTRATOR)
+    @extension_command(nsfw=True)
     async def nsfw(self, *args, **kwargs):
         ...
 

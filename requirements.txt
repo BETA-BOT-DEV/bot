@@ -1,6 +1,7 @@
 aiofiles
 aiosqlite
 discord-py-interactions>=4.3.4
+git+https://github.com/ItsRqtl/tetry-api-aiohttp.git
 interactions-files
 interactions-lavalink
 interactions-persistence

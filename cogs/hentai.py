@@ -20,7 +20,6 @@ from interactions import (
     CommandContext,
     EmbedImageStruct,
     Extension,
-    Permissions,
     extension_command,
 )
 from loguru._logger import Logger
@@ -36,7 +35,7 @@ class hentai(Extension):
             f"Client extension cogs.{os.path.basename(__file__)[:-3]} has been loaded."
         )
 
-    @extension_command(nsfw=True, default_member_permissions=Permissions.ADMINISTRATOR)
+    @extension_command(nsfw=True)
     async def hentai(self, *args, **kwargs):
         ...
 
@@ -63,6 +62,7 @@ class hentai(Extension):
         """要色色嗎？"""
         await ctx.get_channel()
         if not ctx.channel.nsfw and ctx.channel.type != ChannelType.DM:
+            await ctx.defer(ephemeral=True)
             return await ctx.send(
                 embeds=raweb(
                     desc=":x: 不可以色色！這裡不是限制級頻道喔！",
@@ -70,7 +70,6 @@ class hentai(Extension):
                         url="https://media.tenor.com/DhIuVPza3QYAAAAC/不可以色色.gif"
                     ),
                 ),
-                ephemeral=True,
             )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=hmidriff")
