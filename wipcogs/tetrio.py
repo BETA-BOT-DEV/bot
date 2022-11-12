@@ -2,6 +2,7 @@ import math
 import os
 from datetime import datetime, timezone
 
+import aiohttp
 from interactions import (
     CommandContext,
     Embed,
@@ -13,7 +14,6 @@ from interactions import (
     option,
 )
 from loguru._logger import Logger
-from tetry import api as tetrAPI
 
 _skipline = "\n"
 
@@ -33,60 +33,63 @@ class Tetrio(Extension):
     @tetrio.subcommand()
     @option(description="玩家名稱")
     async def user(self, ctx: CommandContext, name: str):
-        try:
-            user = await tetrAPI.getUser(name=name.lower())
-            await ctx.defer(ephemeral=True)
-        except Exception as e:
-            if (
-                e.args[0]
-                != "No such user! | Either you mistyped something, or the account no longer exists."
-            ):
-                raise e
-            else:
-                user = None
-        if not user:
-            return await ctx.send(f":x: baka 我找不到 {name} 啦！", ephemeral=True)
+        """查詢TETR.IO玩家資訊"""
+        async with aiohttp.ClientSession() as s, s.get(
+            f"https://ch.tetr.io/api/users/{name.lower()}"
+        ) as r:
+            resp = await r.json()
+            if not resp["success"]:
+                return await ctx.send(f":x: baka 我找不到 {name} 啦！", ephemeral=True)
+            data = resp["data"]["user"]
+            avatarRevision = data.get("avatar_revision", None)
 
         embed = Embed(
             title="TETR.IO 玩家查詢結果",
             description=f"以下是 TETR.IO 玩家 {name.upper()} 的相關資訊喔！",
             author=EmbedAuthor(
                 name=f"{name.upper()}",
-                icon_url=f"https://tetr.io/user-content/avatars/{user.id}.jpg?rv={user.avatarRevision}"
-                if user.avatarRevision
+                icon_url=f"https://tetr.io/user-content/avatars/{data['_id']}.jpg?rv={avatarRevision}"
+                if avatarRevision
                 else "https://pbs.twimg.com/profile_images/1286993509573169153/pN9ULwc6_400x400.jpg",
-                url=f"https://ch.tetr.io/u/{user.username}",
+                url=f"https://ch.tetr.io/u/{data['username']}",
             ),
             thumbnail=EmbedImageStruct(
-                url=f"https://tetr.io/user-content/avatars/{user.id}.jpg?rv={user.avatarRevision}"
+                url=f"https://tetr.io/user-content/avatars/{data['_id']}.jpg?rv={avatarRevision}"
             )
-            if user.avatarRevision
+            if avatarRevision
             else None,
             color=0x985FE2,
-            fields=[EmbedField(name="玩家簡介", value=user.data["bio"])] if "bio" in user.data else [],
+            fields=[EmbedField(name="玩家簡介", value=data["bio"])] if "bio" in data else [],
         )
 
         embed.add_field(
             "玩家資料",
-            value=f"""創建時間: {f"<t:{math.trunc(datetime.strptime(user.data['ts'][:-5], '%Y-%m-%dT%H:%M:%S').replace(tzinfo=timezone.utc).timestamp())}:F>" if 'ts' in user.data else '未知'}\n身份組: {({'banned': "被封禁玩家", 'bot': "機器人", 'anon': "匿名玩家", "user": "玩家"})[(role:=user.data['role'])]}{f'{_skipline}擁有者: {user.data["botmaster"]}' if role == 'bot' else ""}{f'{_skipline}地區: {user.data["country"]}' if 'country' in user.data and user.data['country'] else ""}{f"{_skipline}Supporter: {'是' if 'supporter' in user.data and user.data['supporter'] else '否'}" if role not in ['bot', 'banned', 'anon'] else ""}{f"{_skipline}已驗證: {'是' if 'verified' in user.data and user.data['verified'] else '否'}" if role not in ['bot', 'banned', 'anon'] else ""}""",
+            value=f"""創建時間: {f"<t:{math.trunc(datetime.strptime(data['ts'][:-5], '%Y-%m-%dT%H:%M:%S').replace(tzinfo=timezone.utc).timestamp())}:F>" if 'ts' in data else '未知'}\n身份組: {({'banned': "被封禁玩家", 'bot': "機器人", 'anon': "匿名玩家", "user": "玩家"})[(role:=data['role'])]}{f'{_skipline}擁有者: {data["botmaster"]}' if role == 'bot' else ""}{f'{_skipline}地區: {data["country"]}' if 'country' in data and data['country'] else ""}{f"{_skipline}Supporter: {'是' if 'supporter' in data and data['supporter'] else '否'}" if role not in ['bot', 'banned', 'anon'] else ""}{f"{_skipline}已驗證: {'是' if 'verified' in data and data['verified'] else '否'}" if role not in ['bot', 'banned', 'anon'] else ""}""",
         )
 
         if role not in ["banned"]:
             embed.add_field(
-                f"基本資料 | {user.data['xp']} XP",
-                value=f"""遊玩時數: {math.trunc(user.data['gametime']/3600) if user.data['gametime'] != -1 else "*隱藏*"}\n多人遊玩次數: {user.data['gamesplayed'] if user.data['gamesplayed'] != -1 else "*隱藏*"}\n多人獲勝次數: {user.data['gameswon'] if user.data['gameswon'] != -1 else "*隱藏*"}\n好友: {user.data['friend_count']}""",
+                f"基本資料 | {data['xp']} XP",
+                value=f"""遊玩時數: {math.trunc(data['gametime']/3600) if data['gametime'] != -1 else "*隱藏*"}\n多人遊玩次數: {data['gamesplayed'] if data['gamesplayed'] != -1 else "*隱藏*"}\n多人獲勝次數: {data['gameswon'] if data['gameswon'] != -1 else "*隱藏*"}\n好友: {data['friend_count']}""",
             )
 
             if role not in ["bot", "anon"]:
-                rc = await tetrAPI.getRecords(name=name.lower())
+                async with aiohttp.ClientSession() as s, s.get(
+                    f"https://ch.tetr.io/api/users/{name.lower()}/records"
+                ) as r:
+                    resp = await r.json()
+                    _40l = resp["data"]["records"]["40l"]
+                    blitz = resp["data"]["records"]["blitz"]
+                    zen = resp["data"]["zen"]
+
                 embed.add_field(
-                    f"""TETRA LEAGUE | {f"{league['rank'].upper() if league['rank'].lower() != 'z' else 'Unranked'} {round(league['rating'], 2)}" if (league:=user.data['league'])['rating'] != -1 else "Unknown"} TR""",
+                    f"""TETRA LEAGUE | {f"{league['rank'].upper() if league['rank'].lower() != 'z' else 'Unranked'} {round(league['rating'], 2)}" if (league:=data['league'])['rating'] != -1 else "Unknown"} TR""",
                     value=f"""獲勝次數: {league["gameswon"]}/{league["gamesplayed"]} ({round((league["gameswon"]/league["gamesplayed"])*100, 2)}%)\n世界排行: {league["standing"] if league["standing"] != -1 else "N/A"} | 地區排名: {league["standing_local"] if league["standing_local"] != -1 else "N/A"}{f"{_skipline}Glicko: {round(league['glicko'], 2)}±{round(league['rd'], 2)}" if 'glicko' in league and 'rd' in league else ""}{f"{_skipline}apm: {league['apm']} | pps: {league['pps']} | vs: {league['vs']}" if 'apm' in league and 'pps' in league and 'vs' in league else ""}""",
                 )
 
                 embed.add_field(
                     "其他紀錄",
-                    value=f"""40L: {f"{math.trunc(rc._40l['record']['endcontext']['finalTime'] / 3600000)}:{'%02d' % math.trunc(rc._40l['record']['endcontext']['finalTime'] % 3600000 / 60000)}:{'%02d' % (rc._40l['record']['endcontext']['finalTime'] / 1000 % 60)} {f'''(世界排行: {rc._40l['rank'] or '不適用'})''' if rc._40l['record'] else ''}" if rc._40l else "沒有紀錄"}\nBlitz: {f"{rc.blitz['record']['endcontext']['score']} {f'''(世界排行: {rc.blitz['rank'] or '不適用'})'''}" if rc.blitz['record'] else "沒有紀錄"}\nzen: {rc.zen['score']} (等級 {rc.zen['level']})""",
+                    value=f"""40L: {f"{math.trunc(_40l['record']['endcontext']['finalTime'] / 3600000)}:{'%02d' % math.trunc(_40l['record']['endcontext']['finalTime'] % 3600000 / 60000)}:{'%02d' % (_40l['record']['endcontext']['finalTime'] / 1000 % 60)} {f'''(世界排行: {_40l['rank'] or '不適用'})''' if _40l['record'] else ''}" if _40l else "沒有紀錄"}\nBlitz: {f"{blitz['record']['endcontext']['score']} {f'''(世界排行: {blitz['rank'] or '不適用'})'''}" if blitz['record'] else "沒有紀錄"}\nzen: {zen['score']} (等級 {zen['level']})""",
                 )
 
         await ctx.send(embeds=embed)
