@@ -54,6 +54,8 @@ class nsfw(Extension):
             )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=pgif")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand(name="4k")
@@ -72,6 +74,8 @@ class nsfw(Extension):
             )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=4k")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand()
@@ -90,6 +94,8 @@ class nsfw(Extension):
             )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=anal")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand()
@@ -108,6 +114,8 @@ class nsfw(Extension):
             )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=ass")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand()
@@ -126,6 +134,8 @@ class nsfw(Extension):
             )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=gonewild")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand()
@@ -144,6 +154,8 @@ class nsfw(Extension):
             )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=pussy")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand()
@@ -162,6 +174,8 @@ class nsfw(Extension):
             )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=thigh")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @nsfw.subcommand()
@@ -180,6 +194,8 @@ class nsfw(Extension):
             )
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=boobs")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
 

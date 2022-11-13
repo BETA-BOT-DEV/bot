@@ -52,6 +52,8 @@ class sfw(Extension):
                 await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["url"])))
             case 2:
                 url = await api_request("https://nekobot.xyz/api/image?type=neko")
+                if url == 429:
+                    return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
                 await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
             case 3:
                 url = await api_request("https://nekos.moe/api/v1/random/image?nsfw=false&tags=cat")
@@ -81,6 +83,8 @@ class sfw(Extension):
         """我的主人很懶，沒有留下說明。"""  # TODO: Add description
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=kanna")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @image.subcommand()
@@ -88,6 +92,8 @@ class sfw(Extension):
         """我的主人很懶，沒有留下說明。"""  # TODO: Add description
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=kemonomimi")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @image.subcommand()
@@ -95,6 +101,8 @@ class sfw(Extension):
         """我的主人很懶，沒有留下說明。"""  # TODO: Add description
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=holo")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @image.subcommand()
@@ -145,6 +153,8 @@ class sfw(Extension):
         """要來杯咖啡嗎？"""
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=coffee")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
     @image.subcommand()
@@ -152,6 +162,8 @@ class sfw(Extension):
         """好吃的東西！"""
         await ctx.defer()
         url = await api_request("https://nekobot.xyz/api/image?type=food")
+        if url == 429:
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         await ctx.send(embeds=raweb(image=EmbedImageStruct(url=url["message"])))
 
 

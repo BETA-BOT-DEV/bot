@@ -91,7 +91,7 @@ def raweb(
 
 
 async def api_request(url: str, headers: dict = None):
-    if datetime.now().timestamp() < (ratelimit["trace.moe"] if "trace.moe" in ratelimit else 0):
+    if datetime.utcnow().timestamp() < ratelimit.get("trace.moe", 0):
         return 429
     async with aiohttp.ClientSession() as s, s.get(url, headers=headers) as r:
         if r.status == 429:
