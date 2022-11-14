@@ -1,5 +1,6 @@
 aiofiles
 aiosqlite
+bs4
 discord-py-interactions>=4.3.4
 interactions-files
 interactions-lavalink
