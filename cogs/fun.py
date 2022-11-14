@@ -386,11 +386,12 @@ class fun(PersistenceExtension):
     @option("原始語言 (留空為自動偵測)", autocomplete=True)
     async def translate(self, ctx: CommandContext, text: str, target: str, original: str = ""):
         """我來幫你翻譯吧！"""
+        await ctx.defer(ephemeral=True)
         resp, lang = await translate(text, target, original)
         if resp == 429:
-            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><", ephemeral=True)
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
         elif resp == 456:
-            return await ctx.send(":x: 對不起！我這個月的翻譯限額用盡了！ ><", ephemeral=True)
+            return await ctx.send(":x: 對不起！我這個月的翻譯限額用盡了！ ><")
         else:
             await ctx.send(
                 embeds=Embed(
