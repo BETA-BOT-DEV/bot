@@ -32,6 +32,7 @@ from petpetgif import petpet
 
 from utils import api_request, bullshit_generator, raweb
 
+TWITTER_USER_REGEX = re.compile(r"^@?[a-zA-Z0-9_]{1,15}$")
 newline = "\n"
 
 
@@ -93,7 +94,7 @@ class generate(Extension):
     async def faketweet(self, ctx: CommandContext, username: str, text: str):
         """發出假的推文"""
         await ctx.defer()
-        if not re.compile(r"^@?(\w){1,15}$").match(username):
+        if not TWITTER_USER_REGEX.match(username):
             return await ctx.send(":x: baka Twitter使用者名稱格式錯誤啦！", ephemeral=True)
         username = username.removeprefix("@")
         url = await api_request(

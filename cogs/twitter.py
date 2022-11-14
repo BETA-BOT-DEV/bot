@@ -48,6 +48,7 @@ from loguru._logger import Logger
 TWITTER_URL_REGEX = re.compile(
     r"https:\/\/(www\.)?(twitter|fxtwitter)\.com\/[A-Za-z0-9_][^ =&/:]{1,15}\/status\/[0-9]{19}"
 )
+TWITTER_USER_REGEX = re.compile(r"^@?[a-zA-Z0-9_]{1,15}$")
 newline = "\n"
 
 
@@ -264,7 +265,7 @@ class twitter(PersistenceExtension):
     @option(description="使用者名稱")
     async def user(self, ctx: CommandContext, username: str):
         """尋找Twitter使用者資料"""
-        if not re.compile(r"^@?(\w){1,15}$").match(username):
+        if not TWITTER_USER_REGEX.match(username):
             return await ctx.send(":x: baka Twitter使用者名稱格式錯誤啦！", ephemeral=True)
         username = username.removeprefix("@")
         lookup = await self.tw.get_user(
@@ -424,7 +425,7 @@ class twitter(PersistenceExtension):
         if not user and not query and not hashtag:
             return await ctx.send(":x: baka 你沒有指定搜尋內容啦！", ephemeral=True)
         if user:
-            if not re.compile(r"^@?(\w){1,15}$").match(user):
+            if not TWITTER_USER_REGEX.match(user):
                 return await ctx.send(":x: baka Twitter使用者名稱格式錯誤啦！", ephemeral=True)
             else:
                 user = user.removeprefix("@")

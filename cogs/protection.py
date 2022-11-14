@@ -12,6 +12,7 @@
 #                                  \/        \/    |__|
 
 import binascii
+import contextlib
 import os
 import re
 from base64 import b64decode
@@ -143,21 +144,23 @@ class protect(Extension):
                     try:
                         await message.delete()
                     except LibraryException:
-                        await message.reply(
-                            message.author.mention,
-                            embeds=raweb(
-                                "發現TOKEN！",
-                                "你的訊息包含了Discord的TOKEN，但我沒有適當的權限為你刪除!\n為安全起見請前往 [Discord Developer Portal](<https://discord.com/developers/applications>) 進行重設。",
-                            ),
-                        )
+                        with contextlib.suppress(LibraryException):
+                            await message.reply(
+                                message.author.mention,
+                                embeds=raweb(
+                                    "發現TOKEN！",
+                                    "你的訊息包含了Discord的TOKEN，但我沒有適當的權限為你刪除!\n為安全起見請前往 [Discord Developer Portal](<https://discord.com/developers/applications>) 進行重設。",
+                                ),
+                            )
                     else:
-                        await (await message.get_channel()).send(
-                            message.author.mention,
-                            embeds=raweb(
-                                "發現TOKEN！",
-                                "你的訊息包含了Discord的TOKEN，我已經為你刪除了!\n為安全起見請前往 [Discord Developer Portal](<https://discord.com/developers/applications>) 進行重設。",
-                            ),
-                        )
+                        with contextlib.suppress(LibraryException):
+                            await (await message.get_channel()).send(
+                                message.author.mention,
+                                embeds=raweb(
+                                    "發現TOKEN！",
+                                    "你的訊息包含了Discord的TOKEN，我已經為你刪除了!\n為安全起見請前往 [Discord Developer Portal](<https://discord.com/developers/applications>) 進行重設。",
+                                ),
+                            )
                     finally:
                         break
 
@@ -239,31 +242,34 @@ class protect(Extension):
                 if not role.managed:
                     roles.append(f"<@&{i}>")
         if message.mentions:
-            for i in message.mentions:
-                if ("bot" not in i or not i["bot"]) and i["id"] != str(message.author.id):
-                    victims.append(f"<@{i['id']}>")
-        if len(victims) == 0 and len(roles) == 0 and not everyone:
+            victims.extend(
+                f"<@{i['id']}>"
+                for i in message.mentions
+                if ("bot" not in i or not i["bot"]) and i["id"] != str(message.author.id)
+            )
+        if not victims and not roles and not everyone:
             return
         content = ""
         if everyone:
             content = "@everyone"
         else:
             content = ""
-            if len(roles) > 0:
+            if roles:
                 content += "身份組: \n"
                 content += "\n".join(roles)
-            if len(victims) > 0:
+            if victims:
                 if content != "":
                     content += "\n\n"
                 content += "成員: \n"
                 content += "\n".join(victims)
         channel = await message.get_channel()
-        await channel.send(
-            embeds=raweb(
-                "抓到 Ghost Ping 了！",
-                desc=f"{message.author.mention} 這樣可不行喔！\n以下的受害者被Ghost ping了...\n\n{content}",
+        with contextlib.suppress(LibraryException):
+            await channel.send(
+                embeds=raweb(
+                    "抓到 Ghost Ping 了！",
+                    desc=f"{message.author.mention} 這樣可不行喔！\n以下的受害者被Ghost ping了...\n\n{content}",
+                )
             )
-        )
 
     @extension_command(default_member_permissions=Permissions.ADMINISTRATOR)
     async def safety(self, *args, **kwargs):
