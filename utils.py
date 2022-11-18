@@ -98,6 +98,8 @@ async def api_request(url: str, headers: dict = None):
             if url.startswith("https://api.trace.moe/search?url="):
                 ratelimit["trace.moe"] = r.headers["x-ratelimit-reset"]
             return 429
+        if r.status == 402:
+            return 402
         return None if r.status == 404 else await r.json()
 
 
