@@ -244,6 +244,7 @@ interactions/ext/error.py
 .DS_Store
 
 # project specific stuff
+.idea/
 lavalink/*
 storage/
 logs/
