@@ -93,9 +93,9 @@ class generate(Extension):
     @option("要發的內容", max_length=280)
     async def faketweet(self, ctx: CommandContext, username: str, text: str):
         """發出假的推文"""
-        await ctx.defer()
         if not TWITTER_USER_REGEX.match(username):
             return await ctx.send(":x: baka Twitter使用者名稱格式錯誤啦！", ephemeral=True)
+        await ctx.defer()
         username = username.removeprefix("@")
         url = await api_request(
             f"https://nekobot.xyz/api/imagegen?type=tweet&username={username}&text={text}"

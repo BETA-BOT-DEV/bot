@@ -11,6 +11,7 @@
 #                   |___||__| /____  >|____|_  /\__   | |__| |____/
 #                                  \/        \/    |__|
 
+import contextlib
 import os
 from random import randint
 
@@ -119,10 +120,8 @@ class welcomer(PersistenceExtension):
             )
             if document["role"] is not None:
                 role = await get(self.client, Role, object_id=document["role"], parent_id=guild.id)
-                try:
+                with contextlib.suppress(Exception):
                     await member.add_role(role)
-                except Exception:
-                    return
 
     @extension_listener()
     async def on_guild_member_remove(self, member: GuildMember):
@@ -284,7 +283,7 @@ class welcomer(PersistenceExtension):
                     title=ebtitle,
                     description=ebdesc,
                     footer=EmbedFooter(text=ebfooter) if ebfooter else None,
-                    color=settings[5] or 0x000000,
+                    color=int(f"0x{settings[5]}", 16) if settings[5] else 0x000000,
                 )
             ]
             if ebtitle or ebdesc
@@ -358,7 +357,7 @@ class welcomer(PersistenceExtension):
         msg.embeds[0].fields[6].value = "*沒有設定*"
         await msg.edit(embeds=msg.embeds, components=msg.components)
         await self._welcome.delete_one({"_id": int(ctx.guild_id)})
-        await ctx.edit("幫你把重設重設了！", components=[])
+        await ctx.edit("我幫你把設定重設了！", components=[])
 
     @extension_component("welcome_settings_reset_cancel")
     async def _welcome_settings_reset_cancel(self, ctx: ComponentContext):
@@ -664,7 +663,7 @@ class welcomer(PersistenceExtension):
                     title=ebtitle,
                     description=ebdesc,
                     footer=EmbedFooter(text=ebfooter) if ebfooter else None,
-                    color=settings[5] or 0x000000,
+                    color=int(f"0x{settings[5]}", 16) if settings[5] else 0x000000,
                 )
             ]
             if (ebtitle or ebdesc)
@@ -736,7 +735,7 @@ class welcomer(PersistenceExtension):
         msg.embeds[0].fields[5].value = "*沒有設定*"
         await msg.edit(embeds=msg.embeds, components=msg.components)
         await self._farewell.delete_one({"_id": int(ctx.guild_id)})
-        await ctx.edit("幫你把重設重設了！", components=[])
+        await ctx.edit("我幫你把設定重設了！", components=[])
 
     @extension_component("farewell_settings_reset_cancel")
     async def _farewell_settings_reset_cancel(self, ctx: ComponentContext):

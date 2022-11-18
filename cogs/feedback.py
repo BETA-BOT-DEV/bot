@@ -445,8 +445,9 @@ class feedback(PersistenceExtension):
 
     @extension_persistent_component("feedback_unblock")
     async def _feedback_unblock(self, ctx: ComponentContext, package):
+        await ctx.defer(ephemeral=True)
         if ctx.user.id != self.client.me.owner.id:
-            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。", ephemeral=True)
+            return await ctx.send(":x: 你不是我的開發者！你不可以使用此按鈕。")
         await ctx.send(
             "你確定要解除封鎖這個使用者嗎？",
             components=[
@@ -471,7 +472,6 @@ class feedback(PersistenceExtension):
                     ]
                 )
             ],
-            ephemeral=True,
         )
 
     @extension_component("feedback_unblock_cancel")

@@ -150,10 +150,11 @@ class counting(PersistenceExtension):
     @option("要設定的頻道")
     async def settings(self, ctx: CommandContext, channel: Channel = None):
         """數數字遊戲的設定"""
+        await ctx.defer(ephemeral=True)
         if not channel:
             channel = await ctx.get_channel()
         if not await ctx.has_permissions(Permissions.MANAGE_CHANNELS):
-            return await ctx.send(":x: baka 你沒有權限使用這個指令喔！", ephemeral=True)
+            return await ctx.send(":x: baka 你沒有權限使用這個指令喔！")
         async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(f"SELECT * FROM counting WHERE guild={ctx.guild_id}") as cursor:
                 data = [i async for i in cursor]
@@ -176,9 +177,7 @@ class counting(PersistenceExtension):
                         ]
                     )
                 ]
-                return await ctx.send(
-                    "我幫這個伺服器設定過數數字遊戲了！\n要覆蓋設定嗎？現時的進度會消失喔。", components=components, ephemeral=True
-                )
+                return await ctx.send("我幫這個伺服器設定過數數字遊戲了！\n要覆蓋設定嗎？現時的進度會消失喔。", components=components)
             await db.execute(
                 f"INSERT OR IGNORE INTO counting VALUES ({ctx.guild_id}, {channel.id}, null, 0)"
             )
@@ -186,20 +185,20 @@ class counting(PersistenceExtension):
                 f"UPDATE counting SET channel={channel.id}, user=null, count=0 WHERE guild={ctx.guild_id}"
             )
             await db.commit()
-            await ctx.send(f"數數字遊戲的設定已經完成了喔！請在 {channel.mention} 頻道裡面開始數數字吧！", ephemeral=True)
+            await ctx.send(f"數數字遊戲的設定已經完成了喔！請在 {channel.mention} 頻道裡面開始數數字吧！")
 
     @counting.subcommand()
     async def stop(self, ctx: CommandContext):
         """停止數數字遊戲"""
+        await ctx.defer(ephemeral=True)
         if not await ctx.has_permissions(Permissions.MANAGE_CHANNELS):
-            return await ctx.send(":x: baka 你沒有權限使用這個指令喔！", ephemeral=True)
+            return await ctx.send(":x: baka 你沒有權限使用這個指令喔！")
         async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(f"SELECT * FROM counting WHERE guild={ctx.guild_id}") as cursor:
                 data = [i async for i in cursor]
             if not data:
                 return await ctx.send(
                     f":x: baka 我印象中好像還沒有幫這個伺服器設定 數數字遊戲 喔！\n請用 </counting settings:{self.client._find_command('counting').id}> 來設定 數數字遊戲。",
-                    ephemeral=True,
                 )
         components = [
             ActionRow(
@@ -209,23 +208,24 @@ class counting(PersistenceExtension):
                 ]
             )
         ]
-        await ctx.send("你確定要停止數數字遊戲嗎？現時的進度會消失喔。", components=components, ephemeral=True)
+        await ctx.send("你確定要停止數數字遊戲嗎？現時的進度會消失喔。", components=components)
 
     @counting.subcommand()
     async def current(self, ctx: CommandContext):
         """查看目前的數字"""
+        await ctx.defer(ephemeral=True)
         async with aiosqlite.connect("./storage/storage.db") as db:
             async with db.execute(f"SELECT * FROM counting WHERE guild={ctx.guild_id}") as cursor:
                 data = [i async for i in cursor]
             if not data:
                 return await ctx.send(
                     f"baka 我印象中好像還沒有幫這個伺服器設定 數數字遊戲 喔！\n請用 </counting settings:{self.client._find_command('counting').id}> 來設定 數數字遊戲。",
-                    ephemeral=True,
                 )
             await ctx.send(embeds=raweb("忘記了嗎？", f"下個數字是 **{data[0][3] + 1}** 啦！"))
 
     @extension_persistent_component("overwrite_confirm")
     async def _overwrite_confirm(self, ctx: ComponentContext, package):
+        await ctx.defer(ephemeral=True)
         channel = await get(self.client, Channel, object_id=int(package))
         async with aiosqlite.connect("./storage/storage.db") as db:
             await db.execute(
@@ -235,7 +235,7 @@ class counting(PersistenceExtension):
                 f"UPDATE counting SET channel={channel.id}, user=null, count=0 WHERE guild={ctx.guild_id}"
             )
             await db.commit()
-            await ctx.send(f"數數字遊戲的設定已經完成了喔！請在 {channel.mention} 頻道裡面開始數數字吧！", ephemeral=True)
+            await ctx.send(f"數數字遊戲的設定已經完成了喔！請在 {channel.mention} 頻道裡面開始數數字吧！")
 
     @extension_component("stop_confirm")
     async def _stop_confirm(self, ctx: ComponentContext):

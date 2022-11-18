@@ -82,6 +82,8 @@ class protect(Extension):
     # TEST: http://malware.testing.google.test/testing/malware/*
     @extension_listener(name="on_message_create")
     async def link_check(self, message: Message):
+        if (await message.get_channel()).type == ChannelType.DM:
+            return
         if message.content:
             if linklist := url_regex.findall(message.content):
                 # api lookup
@@ -128,6 +130,8 @@ class protect(Extension):
 
     @extension_listener(name="on_message_create")
     async def token_check(self, message: Message):
+        if (await message.get_channel()).type == ChannelType.DM:
+            return
         possible = list(
             re.findall(
                 r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27,}", message.content
@@ -166,13 +170,15 @@ class protect(Extension):
 
     @extension_listener(name="on_message_create")
     async def ping_check(self, message: Message):
+        if (await message.get_channel()).type == ChannelType.DM:
+            return
         if not (message.mention_everyone or message.mentions):
             return
         try:
             guild = await message.get_guild()
             channel = await message.get_channel()
             permissions = await channel.get_permissions_for(message.member)
-        except:  # noqa: E722
+        except Exception:
             return
         if channel.type == ChannelType.DM:
             return
@@ -198,12 +204,12 @@ class protect(Extension):
                     "user_id": int(i),
                     "guild_id": int(guild.id),
                     "author": int(message.author.id),
-                    "create": datetime.utcnow(),
+                    "create": datetime.now(timezone.utc),
                 },
                 upsert=True,
             )
 
-    @extension_command()
+    @extension_command(dm_permission=False)
     async def whopinged(self, ctx: CommandContext):
         """尋找12小時內最後在這個伺服器@你的人"""
         await ctx.defer(ephemeral=True)
@@ -227,15 +233,15 @@ class protect(Extension):
             not message.author
             or message.author.id == self.client.me.id
             or (not message.mentions and not message.mention_everyone and not message.mention_roles)
+            or (await message.get_channel()).type == ChannelType.DM
         ):
             return
-        everyone = False
         roles = []
         victims = []
-        if message.mention_everyone and await message.member.has_permissions(
-            Permissions.MENTION_EVERYONE
-        ):
-            everyone = True
+        everyone = bool(
+            message.mention_everyone
+            and await message.member.has_permissions(Permissions.MENTION_EVERYONE)
+        )
         if message.mention_roles:
             for i in message.mention_roles:
                 role = await get(self.client, Role, object_id=int(i), parent_id=message.guild_id)
@@ -271,7 +277,7 @@ class protect(Extension):
                 )
             )
 
-    @extension_command(default_member_permissions=Permissions.ADMINISTRATOR)
+    @extension_command(default_member_permissions=Permissions.ADMINISTRATOR, dm_permission=False)
     async def safety(self, *args, **kwargs):
         ...
 
@@ -303,7 +309,7 @@ class protect(Extension):
             if ctx.guild.mfa_level == 0
             else ":ballot_box_with_check: 伺服器兩步驗證設定"
         )
-        filter = (
+        filters = (
             ":warning: 伺服器未啟用內容過濾 (建議：掃描來自所有使用者的訊息)"
             if ctx.guild.explicit_content_filter == 0
             else ":ballot_box_with_check: 伺服器內容過濾器設定"
@@ -311,7 +317,7 @@ class protect(Extension):
         await ctx.send(
             embeds=raweb(
                 "伺服器安全性檢查結果",
-                f"好了～檢查完了！讓我們繼續一起保持安全的環境吧！\n\n檢查項目：\n{newline.join([admin, mention, verify, mfa, filter])}",
+                f"好了～檢查完了！讓我們繼續一起保持安全的環境吧！\n\n檢查項目：\n{newline.join([admin, mention, verify, mfa, filters])}",
             )
         )
 

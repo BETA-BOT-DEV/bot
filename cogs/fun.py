@@ -227,7 +227,6 @@ class fun(PersistenceExtension):
             elif update in [4, 5, 6]:
                 row = 1
                 col = update - 4
-                build[1][update - 4] = 1
             elif update in [7, 8, 9]:
                 row = 2
                 col = update - 7
@@ -371,13 +370,14 @@ class fun(PersistenceExtension):
     @option("模式", choices=[Choice(name=i, value=i) for i in ["a", "o"]])
     async def lengthen(self, ctx: CommandContext, url: str, mode: str = "o"):
         """連結太短？加長一下吧！"""
+        await ctx.defer()
         url = lengthen_url(url, mode)
         if not url:
-            return await ctx.send(":x: baka 你輸入的不是連結啦！", ephemeral=True)
+            return await ctx.send(":x: baka 你輸入的不是連結啦！")
         if url == 1:
-            return await ctx.send(":x: baka 你不可以重複加長啦！", ephemeral=True)
+            return await ctx.send(":x: baka 你不可以重複加長啦！")
         if len(url) > 4090:
-            return await ctx.send(":x: 連結太長了我記不住！><", ephemeral=True)
+            return await ctx.send(":x: 連結太長了我記不住！><")
         await ctx.send(embeds=raweb("你的超長連結準備好了！", f"```{url}```"))
 
     @extension_command()
@@ -386,7 +386,7 @@ class fun(PersistenceExtension):
     @option("原始語言 (留空為自動偵測)", autocomplete=True)
     async def translate(self, ctx: CommandContext, text: str, target: str, original: str = ""):
         """我來幫你翻譯吧！"""
-        await ctx.defer(ephemeral=True)
+        await ctx.defer()
         resp, lang = await translate(text, target, original)
         if resp == 429:
             return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
@@ -449,10 +449,11 @@ class fun(PersistenceExtension):
 
     @extension_message_command(name="翻譯文字")
     async def message_translate(self, ctx: CommandContext):
+        await ctx.defer(ephemeral=True)
         if ctx.target.content == "":
-            return await ctx.send(":x: 對不起！我沒有看到任何文字！ ><", ephemeral=True)
+            return await ctx.send(":x: 對不起！我沒有看到任何文字！ ><")
         if len(ctx.target.content) > 128:
-            return await ctx.send(":x: 對不起！文字太長了我記不住！ ><", ephemeral=True)
+            return await ctx.send(":x: 對不起！文字太長了我記不住！ ><")
         components = [
             SelectMenu(
                 custom_id=str(
@@ -468,7 +469,7 @@ class fun(PersistenceExtension):
                 max_values=1,
             )
         ]
-        await ctx.send(embeds=raweb("我來幫你翻譯了！你想翻譯到什麼語言？"), components=components, ephemeral=True)
+        await ctx.send(embeds=raweb("我來幫你翻譯了！你想翻譯到什麼語言？"), components=components)
 
     @extension_persistent_component("message_translate")
     async def _message_translate(self, ctx: ComponentContext, package, selected=None):
@@ -479,9 +480,9 @@ class fun(PersistenceExtension):
         ).content
         resp, lang = await translate(text, target)
         if resp == 429:
-            return await ctx.edit(":x: 對不起！我被伺服器限制速率啦！ ><", components=[], ephemeral=True)
+            return await ctx.edit(":x: 對不起！我被伺服器限制速率啦！ ><", components=[])
         elif resp == 456:
-            return await ctx.edit(":x: 對不起！我這個月的翻譯限額用盡了！ ><", components=[], ephemeral=True)
+            return await ctx.edit(":x: 對不起！我這個月的翻譯限額用盡了！ ><", components=[])
         else:
             await ctx.edit(
                 embeds=Embed(
@@ -511,12 +512,18 @@ class fun(PersistenceExtension):
         """忘記了這是哪部動畫的截圖嗎？"""
         await ctx.defer()
         if "image" not in image.content_type:
-            return await ctx.send(":x: baka 你只能上傳圖片！", ephemeral=True)
+            return await ctx.send(":x: baka 你只能上傳圖片！")
         url = await api_request(f"https://api.trace.moe/search?url={quote_plus(image.url)}")
         if url == 429:
-            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><", ephemeral=True)
+            return await ctx.send(":x: 對不起！我被伺服器限制速率啦！ ><")
+        if url == 402:
+            return await ctx.send(
+                ":x: 對不起！我的查詢限額用盡了！ ><",
+            )
         if url["result"][0]["similarity"] < 0.85:
-            return await ctx.send(":x: 對不起！我找不到截圖的來源！><", ephemeral=True)
+            return await ctx.send(
+                ":x: 對不起！我找不到截圖的來源！><",
+            )
         async with aiohttp.ClientSession() as s, s.post(
             "https://trace.moe/anilist/",
             json={
@@ -568,13 +575,18 @@ class fun(PersistenceExtension):
         await ctx.send(f"Google搜尋: [連結](<https://letmegooglethat.com/?q={search}>)")
 
     @extension_command()
+    async def tias(self, ctx: CommandContext):
+        """You should try it and see!"""
+        await ctx.send("Just [try it and see!](https://tryitands.ee/)")
+
+    @extension_command()
     @option("從", min_value=0)
     @option("到", min_value=0)
     async def random(self, ctx: CommandContext, min: int, max: int):
         """隨機產生一個數字"""
-        await ctx.defer()
         if min == max:
             return await ctx.send(":x: baka 只有一個數字要我怎麼選！", ephemeral=True)
+        await ctx.defer()
         if min > max:
             min, max = max, min
         result = randint(min, max)
@@ -598,13 +610,16 @@ class fun(PersistenceExtension):
     @option("要回覆的訊息ID")
     async def say(self, ctx: CommandContext, text: str, reply: str = None):
         """讓我代替你說一句話吧！"""
+        await ctx.defer(ephemeral=True)
         if reply:
             try:
                 ref = await get(
                     self.client, Message, object_id=int(reply), parent_id=ctx.channel_id
                 )
             except Exception:
-                return await ctx.send(":x: 我找不到要回覆的訊息喔！", ephemeral=True)
+                return await ctx.send(
+                    ":x: 我找不到要回覆的訊息喔！",
+                )
             msg = await ref.reply(
                 embeds=raweb(
                     "那我要說出來了！",
@@ -614,6 +629,7 @@ class fun(PersistenceExtension):
                 allowed_mentions=AllowedMentions(everyone=False, roles=False, users=False),
             )
         else:
+            await ctx.get_channel()
             msg = await ctx.channel.send(
                 embeds=raweb(
                     "那我要說出來了！",
@@ -622,7 +638,9 @@ class fun(PersistenceExtension):
                 ),
                 allowed_mentions=AllowedMentions(everyone=False, roles=False, users=False),
             )
-        await ctx.send("好了~", ephemeral=True)
+        await ctx.send(
+            "好了~",
+        )
         await self._say.insert_one(
             {
                 "_id": int(msg.id),
@@ -634,10 +652,14 @@ class fun(PersistenceExtension):
 
     @extension_command(dm_permission=False, default_member_permissions=Permissions.ADMINISTRATOR)
     @option("要查詢的訊息 ID")
-    async def whosay(self, ctx: CommandContext, msg_id: int):
+    async def whosay(self, ctx: CommandContext, msg_id: str):
         """查詢是誰讓我說話"""
         await ctx.defer(ephemeral=True)
-        data = await self._say.find_one({"_id": msg_id})
+        if not msg_id.isdigit():
+            return await ctx.send(
+                ":x: baka 這不是訊息ID啦！",
+            )
+        data = await self._say.find_one({"_id": int(msg_id)})
         if not data:
             return await ctx.send(":x: 這句話不是別人要我說的喔！又或者我已經忘掉了(只能尋找7天以內的訊息)...")
         elif data["guild"] != int(ctx.guild.id):

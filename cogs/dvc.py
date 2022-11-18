@@ -121,27 +121,25 @@ class dvc(PersistenceExtension):
         if not await self._dvc.find_one({"_id": int(ctx.guild_id)}, {"_id": 1}):
             return await ctx.send(
                 f":x: baka 我印象中好像還沒有幫這個伺服器設定 動態語音 喔！\n請用 </dvc settings:{self.client._find_command('dvc').id}> 來設定 動態語音",
-                ephemeral=True,
             )
         await self._dvc.delete_one({"_id": int(ctx.guild_id)})
         await ctx.send(
             f":white_check_mark: 我幫你重置了 動態語音 設定！你可以用 </dvc settings:{self.client._find_command('dvc').id}> 來再次設定 動態語音。",
-            ephemeral=True,
         )
 
     @dvc.subcommand()
     @option("要保留的語音頻道", channel_types=[ChannelType.GUILD_VOICE])
     async def keep(self, ctx: CommandContext, channel: Channel):
         """保留語音頻道 (防止被刪除)"""
+        await ctx.defer(ephemeral=True)
         document = await self._dvc.find_one({"_id": int(ctx.guild_id)}, {"keep": 1, "_id": 1})
         if not document:
             return await ctx.send(
                 f":x: baka 我印象中好像還沒有幫這個伺服器設定 動態語音 喔！\n請用 </dvc settings:{self.client._find_command('dvc').id}> 來設定 動態語音。",
-                ephemeral=True,
             )
         if "keep" in document:
             if int(channel.id) in document["keep"]:
-                return await ctx.send(":x: baka 這個語音頻道已經被保留了喔！", ephemeral=True)
+                return await ctx.send(":x: baka 這個語音頻道已經被保留了喔！")
             else:
                 document["keep"].append(int(channel.id))
         else:
@@ -150,7 +148,7 @@ class dvc(PersistenceExtension):
             {"_id": int(ctx.guild_id)}, {"$set": {"keep": document["keep"]}}, upsert=True
         )
         await ctx.send(
-            f":white_check_mark: 我幫你保留了 {channel.mention} 這個語音頻道！現在它不會被我不小心刪除了！", ephemeral=True
+            f":white_check_mark: 我幫你保留了 {channel.mention} 這個語音頻道！現在它不會被我不小心刪除了！",
         )
 
     @extension_persistent_modal("dvc_settings")

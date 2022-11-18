@@ -10,6 +10,7 @@ interactions-wait-for
 loguru
 motor[srv]
 pet-pet-gif
+pymediawiki
 python-decouple
 pytz
 qrcode[pil]

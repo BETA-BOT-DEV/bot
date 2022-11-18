@@ -32,6 +32,9 @@ from loguru._logger import Logger
 
 from utils import api_request
 
+# from mediawiki import MediaWiki
+
+
 newline = "\n"
 
 
